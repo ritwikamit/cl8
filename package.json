@@ -13,10 +13,10 @@
     "ollama",
     "developer-tools"
   ],
-  "homepage": "https://github.com/YOUR_USERNAME/cl8#readme",
+  "homepage": "https://github.com/ritwikamit/cl8#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/YOUR_USERNAME/cl8.git"
+    "url": "git+https://github.com/ritwikamit/cl8.git"
   },
   "license": "MIT",
   "author": "CL8 Contributors",
