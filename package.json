@@ -1,6 +1,6 @@
 {
   "name": "cl8",
-  "version": "0.1.0-alpha.1",
+  "version": "0.1.0-alpha.2",
   "description": "Terminal-first AI coding + automation assistant. Powered by OpenAI, Gemini, or Ollama.",
   "keywords": [
     "ai",
@@ -11,15 +11,19 @@
     "openai",
     "gemini",
     "ollama",
-    "developer-tools"
+    "developer-tools",
+    "productivity"
   ],
-  "homepage": "https://github.com/YOUR_USERNAME/cl8#readme",
+  "homepage": "https://github.com/ritwikamit/cl8#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/YOUR_USERNAME/cl8.git"
+    "url": "git+https://github.com/ritwikamit/cl8.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ritwikamit/cl8/issues"
   },
   "license": "MIT",
-  "author": "CL8 Contributors",
+  "author": "ritwikamit",
   "main": "dist/index.js",
   "bin": {
     "cl8": "dist/bin/cl8.js"
@@ -43,6 +47,12 @@
     "test:coverage": "jest --coverage --passWithNoTests",
     "prepublishOnly": "npm run build",
     "postinstall": "node -e \"console.log('\\n  CL8 installed! Run \\'cl8\\' to start.\\n')\""
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   },
   "dependencies": {
     "@google/generative-ai": "^0.21.0",
@@ -74,9 +84,7 @@
     "rimraf": "^6.0.1",
     "ts-jest": "^29.2.5",
     "tsx": "^4.19.0",
-    "typescript": "^5.7.0"
-  },
-  "engines": {
-    "node": ">=18.0.0"
+    "typescript": "^5.7.0",
+    "typescript-eslint": "^8.60.0"
   }
 }
