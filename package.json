@@ -1,6 +1,6 @@
 {
   "name": "cl8",
-  "version": "0.1.0-alpha.1",
+  "version": "0.1.0-alpha.6",
   "description": "Terminal-first AI coding + automation assistant. Powered by OpenAI, Gemini, or Ollama.",
   "keywords": [
     "ai",
