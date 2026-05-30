@@ -1,0 +1,14 @@
+{
+  "sessionId": "MBRXT4i9Ocj0ZBunuzL5CcNgPQKU",
+  "messages": [
+    {
+      "id": "ZisO_asIQ53ymdvQ04sSQmiqFQLQ",
+      "role": "user",
+      "content": "hi",
+      "timestamp": "2026-05-30T06:41:41.320Z"
+    }
+  ],
+  "tokenCount": 1,
+  "createdAt": "2026-05-30T06:41:41.320Z",
+  "updatedAt": "2026-05-30T06:41:41.321Z"
+}

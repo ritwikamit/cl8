@@ -1,0 +1,14 @@
+{
+  "sessionId": "AU1L5-N86GErQqmstrQBPpWDEzMn",
+  "messages": [
+    {
+      "id": "5_8zyeMS-lLg_FLb1YQ6LF95aeT-",
+      "role": "user",
+      "content": "hey",
+      "timestamp": "2026-05-30T06:50:42.231Z"
+    }
+  ],
+  "tokenCount": 1,
+  "createdAt": "2026-05-30T06:50:42.231Z",
+  "updatedAt": "2026-05-30T06:50:42.233Z"
+}

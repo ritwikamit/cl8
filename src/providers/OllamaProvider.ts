@@ -1,0 +1,161 @@
+import { BaseProvider } from './BaseProvider.js';
+import {
+  ProviderConfig,
+  ChatCompletionRequest,
+  ChatCompletionResponse,
+  StreamChunk,
+  ProviderCapabilities,
+} from '../types/provider.js';
+import { AgentMessage } from '../types/agent.js';
+
+interface OllamaMessage {
+  role: string;
+  content: string;
+}
+
+interface OllamaResponse {
+  model: string;
+  created_at: string;
+  message: OllamaMessage;
+  done: boolean;
+  total_duration?: number;
+  prompt_eval_count?: number;
+  eval_count?: number;
+}
+
+export class OllamaProvider extends BaseProvider {
+  private baseUrl: string;
+
+  constructor(config: ProviderConfig) {
+    super(config);
+    this.baseUrl = config.baseUrl?.replace(/\/+$/, '') || 'http://localhost:11434';
+  }
+
+  get capabilities(): ProviderCapabilities {
+    return {
+      streaming: true,
+      toolCalling: false,
+      vision: false,
+      maxContextTokens: 8192,
+    };
+  }
+
+  async chat(request: ChatCompletionRequest): Promise<ChatCompletionResponse> {
+    const response = await fetch(`${this.baseUrl}/api/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: this.config.model,
+        messages: this.formatMessagesForOllama(request.messages, request.systemPrompt),
+        stream: false,
+        options: {
+          temperature: request.temperature ?? this.config.temperature,
+        },
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Ollama API error: ${response.status} ${response.statusText}`);
+    }
+
+    const data = (await response.json()) as OllamaResponse;
+
+    return {
+      id: crypto.randomUUID(),
+      content: data.message?.content || '',
+      model: this.config.model,
+      usage: data.prompt_eval_count
+        ? {
+            promptTokens: data.prompt_eval_count,
+            completionTokens: data.eval_count || 0,
+            totalTokens: (data.prompt_eval_count || 0) + (data.eval_count || 0),
+          }
+        : undefined,
+      finishReason: 'stop',
+    };
+  }
+
+  async *chatStream(request: ChatCompletionRequest): AsyncIterable<StreamChunk> {
+    const response = await fetch(`${this.baseUrl}/api/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: this.config.model,
+        messages: this.formatMessagesForOllama(request.messages, request.systemPrompt),
+        stream: true,
+        options: {
+          temperature: request.temperature ?? this.config.temperature,
+        },
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Ollama API error: ${response.status} ${response.statusText}`);
+    }
+
+    const reader = response.body?.getReader();
+    if (!reader) throw new Error('No response body');
+
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || '';
+
+      for (const line of lines) {
+        if (!line.trim()) continue;
+        try {
+          const data = JSON.parse(line) as OllamaResponse;
+          if (data.message?.content) {
+            yield { content: data.message.content, done: false };
+          }
+          if (data.done) {
+            yield {
+              content: '',
+              done: true,
+              usage: data.prompt_eval_count
+                ? {
+                    promptTokens: data.prompt_eval_count,
+                    completionTokens: data.eval_count || 0,
+                    totalTokens: (data.prompt_eval_count || 0) + (data.eval_count || 0),
+                  }
+                : undefined,
+            };
+          }
+        } catch {
+          continue;
+        }
+      }
+    }
+  }
+
+  async countTokens(messages: AgentMessage[]): Promise<number> {
+    const text = messages.map(m => m.content).join('\n');
+    return Math.ceil(text.length / 4);
+  }
+
+  private formatMessagesForOllama(
+    messages: AgentMessage[],
+    systemPrompt?: string
+  ): OllamaMessage[] {
+    const result: OllamaMessage[] = [];
+
+    if (systemPrompt) {
+      result.push({ role: 'system', content: systemPrompt });
+    }
+
+    for (const msg of messages) {
+      result.push({
+        role: msg.role === 'assistant' ? 'assistant' : 'user',
+        content: msg.content,
+      });
+    }
+
+    return result;
+  }
+}

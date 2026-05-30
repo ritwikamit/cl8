@@ -1,0 +1,141 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import { BaseTool } from './BaseTool.js';
+import { ToolInput, ToolOutput, ToolContext } from '../types/tool.js';
+
+type FileOperation = 'read' | 'write' | 'edit' | 'delete' | 'list' | 'info';
+
+export class FileTool extends BaseTool {
+  constructor() {
+    super({
+      name: 'file',
+      description: 'Read, write, edit, and manage files in the workspace',
+      category: 'file',
+      permissions: ['read', 'write'],
+      inputSchema: {
+        type: 'object',
+        properties: {
+          operation: {
+            type: 'string',
+            enum: ['read', 'write', 'edit', 'delete', 'list', 'info'],
+          },
+          path: { type: 'string', description: 'File path relative to workspace' },
+          content: { type: 'string', description: 'Content to write (for write/edit)' },
+          oldString: { type: 'string', description: 'Text to replace (for edit)' },
+          newString: { type: 'string', description: 'Replacement text (for edit)' },
+          pattern: { type: 'string', description: 'Glob pattern (for list)' },
+        },
+        required: ['operation', 'path'],
+      },
+      requiresApproval: false,
+      dangerous: false,
+    });
+  }
+
+  async execute(input: ToolInput, context: ToolContext): Promise<ToolOutput> {
+    const operation = input.operation as FileOperation;
+    const filePath = input.path as string;
+
+    const safePath = this.resolveSafePath(filePath, context.workspace);
+
+    try {
+      switch (operation) {
+        case 'read':
+          return await this.readFile(safePath);
+        case 'write':
+          return await this.writeFile(safePath, input.content as string);
+        case 'edit':
+          return await this.editFile(safePath, input.oldString as string, input.newString as string);
+        case 'delete':
+          return await this.deleteFile(safePath);
+        case 'list':
+          return await this.listFiles(safePath, input.pattern as string);
+        case 'info':
+          return await this.fileInfo(safePath);
+        default:
+          return { success: false, error: `Unknown operation: ${operation}` };
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      return { success: false, error: message };
+    }
+  }
+
+  private resolveSafePath(filePath: string, workspace: string): string {
+    const resolved = path.resolve(workspace, filePath);
+    const normalizedWorkspace = path.resolve(workspace);
+
+    if (!resolved.startsWith(normalizedWorkspace)) {
+      throw new Error(`Access denied: path ${filePath} is outside workspace`);
+    }
+
+    return resolved;
+  }
+
+  private async readFile(filePath: string): Promise<ToolOutput> {
+    const content = await fs.readFile(filePath, 'utf-8');
+    return {
+      success: true,
+      data: { content, path: filePath, size: content.length },
+      stdout: content,
+    };
+  }
+
+  private async writeFile(filePath: string, content: string): Promise<ToolOutput> {
+    await fs.mkdir(path.dirname(filePath), { recursive: true });
+    await fs.writeFile(filePath, content, 'utf-8');
+    return {
+      success: true,
+      data: { path: filePath, size: content.length },
+      stdout: `Wrote ${filePath}`,
+    };
+  }
+
+  private async editFile(filePath: string, oldString: string, newString: string): Promise<ToolOutput> {
+    const content = await fs.readFile(filePath, 'utf-8');
+
+    if (!content.includes(oldString)) {
+      return { success: false, error: `String "${oldString}" not found in file` };
+    }
+
+    const newContent = content.replace(oldString, newString);
+    await fs.writeFile(filePath, newContent, 'utf-8');
+
+    return {
+      success: true,
+      data: { path: filePath, changes: 1 },
+      stdout: `Edited ${filePath}`,
+    };
+  }
+
+  private async deleteFile(filePath: string): Promise<ToolOutput> {
+    await fs.unlink(filePath);
+    return { success: true, stdout: `Deleted ${filePath}` };
+  }
+
+  private async listFiles(dirPath: string, pattern?: string): Promise<ToolOutput> {
+    const entries = await fs.readdir(dirPath, { withFileTypes: true });
+    const files = entries.map(e => ({
+      name: e.name,
+      type: e.isDirectory() ? 'directory' : 'file',
+      path: path.join(dirPath, e.name),
+    }));
+
+    return { success: true, data: { files } };
+  }
+
+  private async fileInfo(filePath: string): Promise<ToolOutput> {
+    const stats = await fs.stat(filePath);
+    return {
+      success: true,
+      data: {
+        path: filePath,
+        size: stats.size,
+        created: stats.birthtime,
+        modified: stats.mtime,
+        isDirectory: stats.isDirectory(),
+        isFile: stats.isFile(),
+      },
+    };
+  }
+}

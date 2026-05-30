@@ -1,0 +1,14 @@
+{
+  "id": "j0TX_V3QfuMvvOLr5KYAuwhKIcct",
+  "workspace": "C:\\Users\\nihar\\OneDrive\\Desktop\\proj\\CL8\\workspace",
+  "provider": "gemini",
+  "model": "gemini-2.0-flash",
+  "startTime": "2026-05-30T06:41:34.522Z",
+  "messageCount": 0,
+  "tokenUsage": {
+    "prompt": 0,
+    "completion": 0,
+    "total": 0
+  },
+  "endTime": "2026-05-30T06:50:26.270Z"
+}
