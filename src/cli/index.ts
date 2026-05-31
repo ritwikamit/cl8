@@ -6,16 +6,16 @@ import { chatCommand } from './commands/chat.js';
 import { initCommand } from './commands/init.js';
 import { sessionCommand } from './commands/session.js';
 import { configCommand } from './commands/config.js';
-import { selectLogoVariant, renderLogo } from '../ui/pixel-logo.js';
+import { renderLogo } from '../ui/pixel-logo.js';
 import pkg from '../../package.json';
 
 function showBanner(): void {
   const columns = process.stdout.columns || 100;
-  const variant = selectLogoVariant(columns);
-  const logo = renderLogo(variant, columns, false);
-  console.log(logo);
-  console.log(chalk.cyan('  Terminal AI Coding & Automation Assistant\n'));
-  console.log(chalk.dim(`  Version ${pkg.version} · Type /help for commands\n`));
+  console.log();
+  console.log(renderLogo(columns));
+  console.log(`  ${chalk.cyan('Terminal AI Coding & Automation Assistant')}`);
+  console.log(`  ${chalk.dim(`Version ${pkg.version} · Type /help for commands`)}`);
+  console.log();
 }
 
 export function createCLI(): Command {

@@ -1,5 +1,13 @@
-export { MarkdownRenderer, markdown } from './MarkdownRenderer.js';
-export { Spinner } from './Spinner.js';
-export { StreamingOutput } from './StreamingOutput.js';
+export { renderLogo } from './pixel-logo.js';
 export { showSplash, showReducedSplash } from './splash.js';
-export { selectLogoVariant, renderLogo } from './pixel-logo.js';
+export { SpinnerManager } from './spinner-manager.js';
+export { Spinner } from './Spinner.js';
+export { StatusBar } from './status-bar.js';
+export { ThemeManager } from './theme-manager.js';
+export { MarkdownRenderer, markdown } from './MarkdownRenderer.js';
+export { StreamingOutput } from './StreamingOutput.js';
+export { TypingAnimation } from './typing-animation.js';
+export { Onboarding } from './onboarding.js';
+export { ContextMonitor } from './context-monitor.js';
+export { WorkspacePanel } from './workspace-panel.js';
+export type { ThemeMode, TerminalType, ThemeColors, UIState } from './types.js';
