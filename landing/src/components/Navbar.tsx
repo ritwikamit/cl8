@@ -45,11 +45,11 @@ export default function Navbar() {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 px-8 lg:px-16 h-20 flex items-center justify-between" style={{ background: "linear-gradient(180deg, rgba(0,0,0,0.4) 0%, transparent 100%)" }}>
       <Link to="/" className="flex items-center gap-3 group">
-        <span className="flex gap-[4px] items-center">
-          <span className="w-[7px] h-[7px] rounded-full bg-[#00aaff]" />
-          <span className="w-[7px] h-[7px] rounded-full bg-[#9333ea]" />
+        <span className="flex gap-[5px] items-center">
+          <span className="w-[9px] h-[9px] rounded-full bg-[#00aaff]" />
+          <span className="w-[9px] h-[9px] rounded-full bg-[#9333ea]" />
         </span>
-        <svg width="52" height="22" viewBox="0 0 52 22" className="inline-block">
+        <svg width="60" height="26" viewBox="0 0 60 26" className="inline-block">
           <defs>
             <linearGradient id="logoG" x1="0" y1="0" x2="1" y2="1">
               <stop offset="0%" stopColor="#00aaff" />
@@ -57,7 +57,7 @@ export default function Navbar() {
               <stop offset="100%" stopColor="#ff6bcb" />
             </linearGradient>
           </defs>
-          <text x="0" y="18" fontFamily="'Instrument Serif', Georgia, serif" fontStyle="italic" fontSize="20" fontWeight="500" fill="url(#logoG)">CL8</text>
+          <text x="0" y="21" fontFamily="'Instrument Serif', Georgia, serif" fontStyle="italic" fontSize="24" fontWeight="500" fill="url(#logoG)">CL8</text>
         </svg>
       </Link>
 
