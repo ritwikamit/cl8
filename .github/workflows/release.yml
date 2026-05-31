@@ -15,12 +15,12 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '20'
           registry-url: 'https://registry.npmjs.org'
@@ -55,8 +55,31 @@ jobs:
             echo "Version already at $TARGET_VERSION, skipping update"
           fi
 
+      - name: Resolve npm dist tag
+        id: npm-tag
+        run: |
+          VERSION=${{ steps.version.outputs.VERSION }}
+          if [[ "$VERSION" == *"-"* ]]; then
+            PRERELEASE=${VERSION#*-}
+            TAG=${PRERELEASE%%.*}
+            case "$TAG" in
+              alpha|beta|rc|next) ;;
+              *) TAG=next ;;
+            esac
+          else
+            TAG=latest
+          fi
+          echo "TAG=$TAG" >> $GITHUB_OUTPUT
+
+      - name: Verify npm authentication
+        run: |
+          npm config get registry
+          npm whoami
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
       - name: Publish to npm
-        run: npm publish --access public
+        run: npm publish --access public --tag ${{ steps.npm-tag.outputs.TAG }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
@@ -66,7 +89,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
