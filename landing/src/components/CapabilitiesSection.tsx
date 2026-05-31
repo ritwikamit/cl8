@@ -25,21 +25,20 @@ const cards = [
 
 export default function CapabilitiesSection() {
   return (
-    <section className="relative min-h-screen w-screen overflow-hidden bg-black">
+    <section id="features" className="relative min-h-screen w-screen overflow-hidden bg-black scroll-mt-28">
       <FadingVideo
         src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260418_094631_d30ab262-45ee-4b7d-99f3-5d5848c8ef13.mp4"
         className="absolute inset-0 w-full h-full object-cover z-0"
       />
 
-      {/* Stronger vignette for section contrast */}
       <div className="absolute inset-0 z-[1] vignette-dark" />
 
       <div className="relative z-10 px-8 md:px-16 lg:px-20 pt-28 pb-16 flex flex-col min-h-screen">
         <div className="mb-auto">
-          <p className="text-sm font-medium text-white/70 mb-6 tracking-widest uppercase">// Capabilities</p>
+          <p className="text-sm font-medium text-white/70 mb-6 tracking-widest uppercase text-glow">// Capabilities</p>
           <BlurText
             text="Terminal evolved"
-            className="font-heading italic text-white text-6xl md:text-7xl lg:text-[6rem] leading-[0.9] tracking-[-3px] justify-start"
+            className="font-heading italic text-white text-6xl md:text-7xl lg:text-[6rem] leading-[0.9] tracking-[-3px] justify-start text-glow"
             delay={0.2}
           />
         </div>
