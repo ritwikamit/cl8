@@ -10,7 +10,8 @@ const stats = [
 export default function AboutSection() {
   return (
     <section id="about" className="relative min-h-screen w-screen overflow-hidden bg-black flex items-center">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_40%_at_50%_40%,rgba(255,255,255,0.02),transparent_70%)]" />
+      <div className="absolute inset-0 bg-aura" />
+      <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(255,255,255,0.3) 1px, rgba(255,255,255,0.3) 2px), repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(255,255,255,0.3) 1px, rgba(255,255,255,0.3) 2px)", backgroundSize: "60px 60px" }} />
 
       <div className="relative z-10 w-full px-8 md:px-16 lg:px-24 py-24">
         <div className="max-w-7xl mx-auto w-full">

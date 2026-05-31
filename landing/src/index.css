@@ -50,3 +50,18 @@ html {
   height: 0.5px;
   background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
 }
+
+.gradient-logo {
+  background: linear-gradient(135deg, #00aaff 0%, #9333ea 50%, #ff6bcb 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.bg-aura {
+  background:
+    radial-gradient(ellipse 55% 30% at 25% 20%, rgba(0, 170, 255, 0.07), transparent 70%),
+    radial-gradient(ellipse 45% 25% at 75% 35%, rgba(147, 51, 234, 0.07), transparent 70%),
+    radial-gradient(ellipse 40% 20% at 50% 80%, rgba(255, 107, 203, 0.05), transparent 60%),
+    #000;
+}

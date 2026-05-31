@@ -34,8 +34,14 @@ export default function HeroSection() {
       <div className="relative z-10 flex flex-col h-full">
         {/* Nav */}
         <nav className="fixed top-0 left-0 right-0 z-50 px-8 lg:px-16 h-20 flex items-center justify-between" style={{ background: "linear-gradient(180deg, rgba(0,0,0,0.4) 0%, transparent 100%)" }}>
-          <a href="#home" className="text-2xl font-heading italic text-white tracking-[-1px]">
-            CL8
+          <a href="#home" className="flex items-center gap-3 group">
+            <span className="flex items-center gap-0.5">
+              <span className="w-2 h-2 rounded-full bg-[#00aaff]" />
+              <span className="w-2 h-2 rounded-full bg-[#9333ea]" />
+            </span>
+            <span className="text-xl font-heading italic gradient-logo tracking-[-1px]">
+              CL8
+            </span>
           </a>
 
           <div className="hidden md:flex items-center gap-8">
