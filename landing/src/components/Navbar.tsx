@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Link, useLocation } from "react-router-dom";
 
 function CopyFeedback({ copied }: { copied: boolean }) {
@@ -14,7 +14,7 @@ function CopyFeedback({ copied }: { copied: boolean }) {
 
 const links = [
   { label: "Home", path: "/" },
-  { label: "Features", path: "/features" },
+  { label: "Features", path: "/", anchor: "features" },
   { label: "CLI", path: "/cli" },
   { label: "About", path: "/about" },
   { label: "Blog", path: "/blog" },
@@ -28,6 +28,18 @@ export default function Navbar() {
     navigator.clipboard.writeText("npx @ritwikamit/cl8");
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const scrollToFeatures = useCallback((e: React.MouseEvent) => {
+    if (pathname === "/") {
+      e.preventDefault();
+      document.getElementById("features")?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [pathname]);
+
+  const isActive = (link: typeof links[0]) => {
+    if (link.anchor) return false;
+    return pathname === link.path;
   };
 
   return (
@@ -51,15 +63,26 @@ export default function Navbar() {
 
       <div className="hidden md:flex items-center gap-8">
         {links.map((l) => (
-          <Link
-            key={l.path}
-            to={l.path}
-            className={`text-sm font-body font-normal tracking-wide transition-colors ${
-              pathname === l.path ? "text-white/90" : "text-white/50 hover:text-white/90"
-            }`}
-          >
-            {l.label}
-          </Link>
+          l.anchor ? (
+            <a
+              key={l.label}
+              href={`/#${l.anchor}`}
+              onClick={scrollToFeatures}
+              className="text-sm font-body font-normal tracking-wide text-white/50 hover:text-white/90 transition-colors"
+            >
+              {l.label}
+            </a>
+          ) : (
+            <Link
+              key={l.path}
+              to={l.path}
+              className={`text-sm font-body font-normal tracking-wide transition-colors ${
+                isActive(l) ? "text-white/90" : "text-white/50 hover:text-white/90"
+              }`}
+            >
+              {l.label}
+            </Link>
+          )
         ))}
         <button
           onClick={copyNpx}
