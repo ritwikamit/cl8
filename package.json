@@ -56,7 +56,6 @@
   },
   "dependencies": {
     "@google/generative-ai": "^0.21.0",
-    "better-sqlite3": "^11.7.0",
     "chalk": "^5.4.0",
     "commander": "^12.1.0",
     "conf": "^13.1.0",
@@ -73,7 +72,6 @@
     "winston": "^3.17.0"
   },
   "devDependencies": {
-    "@types/better-sqlite3": "^7.6.12",
     "@types/figlet": "^1.7.0",
     "@types/gradient-string": "^1.1.6",
     "@types/inquirer": "^9.0.7",
