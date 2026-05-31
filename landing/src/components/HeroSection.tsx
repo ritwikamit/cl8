@@ -37,24 +37,28 @@ export default function HeroSection() {
         style={{ width: "120%", height: "120%" }}
       />
 
-      {/* Subtle vignette for text readability */}
-      <div className="absolute inset-0 z-[1] vignette" />
+      <div className="absolute inset-0 z-[1] vignette-hero" />
 
       <div className="relative z-10 flex flex-col h-full">
         {/* Navbar */}
-        <nav className="fixed top-4 left-0 right-0 z-50 px-8 lg:px-16 flex items-center justify-between">
-          <div className="liquid-glass w-12 h-12 rounded-full flex items-center justify-center">
-            <span className="italic text-white text-xl" style={{ fontFamily: "'Instrument Serif', serif" }}>
-              c
+        <nav className="fixed top-5 left-0 right-0 z-50 px-8 lg:px-16 flex items-center justify-between">
+          <a href="#" className="flex items-center gap-2.5 group">
+            <div className="liquid-glass w-10 h-10 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform">
+              <span className="gradient-text text-lg font-bold font-heading italic" style={{ fontFamily: "'Instrument Serif', serif" }}>
+                c
+              </span>
+            </div>
+            <span className="gradient-text text-xl font-heading italic leading-none tracking-[-1px] hidden sm:block">
+              CL8
             </span>
-          </div>
+          </a>
 
           <div className="hidden lg:flex liquid-glass rounded-full px-1.5 py-1.5 items-center gap-1">
             {["Home", "Features", "CLI", "About", "Blog"].map((l) => (
               <a
                 key={l}
                 href="#"
-                className="px-4 py-2 text-sm font-medium text-white hover:text-white/70 transition-colors"
+                className="px-4 py-2 text-sm font-normal text-white/80 hover:text-white transition-colors"
               >
                 {l}
               </a>
@@ -68,7 +72,14 @@ export default function HeroSection() {
             </button>
           </div>
 
-          <div className="w-12 h-12" />
+          {/* Mobile npx button */}
+          <button
+            onClick={copyNpx}
+            className="lg:hidden liquid-glass rounded-full px-4 py-2 text-sm font-medium text-white flex items-center gap-2 cursor-pointer"
+          >
+            <span className="text-xs">npx @ritwikamit/cl8</span>
+            <CopyFeedback copied={copied} />
+          </button>
         </nav>
 
         {/* Hero content */}
@@ -78,15 +89,15 @@ export default function HeroSection() {
             <span className="text-sm text-white/90 pr-3 font-medium">npx @ritwikamit/cl8 — instant AI in your terminal</span>
           </motion.div>
 
-          <div className="max-w-3xl">
+          <div className="max-w-4xl">
             <BlurText
-              text="Code Past Your Limits Across the Terminal"
-              className="text-6xl md:text-7xl lg:text-[5.5rem] font-heading italic text-white leading-[0.8] justify-center tracking-[-4px]"
+              text="Code Beyond the Limits of Terminal"
+              className="text-6xl md:text-7xl lg:text-[5.5rem] font-heading italic text-white leading-[0.85] justify-center tracking-[-4px]"
               delay={0.5}
             />
           </div>
 
-          <motion.p {...item(0.8)} className="mt-6 text-base md:text-lg text-white/90 max-w-xl font-body leading-relaxed font-normal">
+          <motion.p {...item(0.8)} className="mt-6 text-base md:text-lg text-white/90 max-w-2xl font-body leading-relaxed font-normal">
             Discover a terminal experience once unimaginable. Our AI-powered assistant brings deep coding intelligence within reach — secure, fast, and extraordinary.
           </motion.p>
 
@@ -114,27 +125,27 @@ export default function HeroSection() {
             </a>
           </motion.div>
 
-          <motion.div {...item(1.3)} className="flex items-stretch gap-6 mt-12">
-            <div className="liquid-glass p-6 w-[230px] rounded-[1.25rem]">
+          <motion.div {...item(1.3)} className="flex items-stretch gap-6 mt-14">
+            <div className="liquid-glass p-7 w-[240px] rounded-[1.25rem]">
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="12" cy="12" r="10" />
                 <polyline points="12 6 12 12 16 14" />
               </svg>
-              <div className="text-4xl tracking-[-1px] leading-none text-white mt-4" style={{ fontFamily: "'Instrument Serif', serif", fontStyle: "italic" }}>
+              <div className="text-5xl tracking-[-2px] leading-none text-white mt-4 gradient-text" style={{ fontFamily: "'Instrument Serif', serif", fontStyle: "italic" }}>
                 0.3s
               </div>
-              <div className="text-sm text-white/70 font-body mt-2 font-normal">Avg. Response Time</div>
+              <div className="text-sm text-white/80 font-body mt-2 font-medium">Avg. Response Time</div>
             </div>
-            <div className="liquid-glass p-6 w-[230px] rounded-[1.25rem]">
+            <div className="liquid-glass p-7 w-[240px] rounded-[1.25rem]">
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="12" cy="12" r="10" />
                 <line x1="2" y1="12" x2="22" y2="12" />
                 <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
               </svg>
-              <div className="text-4xl tracking-[-1px] leading-none text-white mt-4" style={{ fontFamily: "'Instrument Serif', serif", fontStyle: "italic" }}>
+              <div className="text-5xl tracking-[-2px] leading-none text-white mt-4 gradient-text" style={{ fontFamily: "'Instrument Serif', serif", fontStyle: "italic" }}>
                 3+ Models
               </div>
-              <div className="text-sm text-white/70 font-body mt-2 font-normal">Ollama · OpenAI · Gemini</div>
+              <div className="text-sm text-white/80 font-body mt-2 font-medium">Ollama · OpenAI · Gemini</div>
             </div>
           </motion.div>
         </div>
@@ -149,9 +160,9 @@ export default function HeroSection() {
             style={{ fontFamily: "'Instrument Serif', serif", fontStyle: "italic" }}
           >
             <span>Ollama</span>
-            <span className="text-white/40">·</span>
+            <span className="text-white/30">·</span>
             <span>OpenAI</span>
-            <span className="text-white/40">·</span>
+            <span className="text-white/30">·</span>
             <span>Gemini</span>
           </div>
         </motion.div>

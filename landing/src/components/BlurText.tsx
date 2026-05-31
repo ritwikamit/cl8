@@ -47,12 +47,12 @@ export default function BlurText({
               : {}
           }
           transition={{
-            duration: 0.7,
+            duration: 0.6,
             times: [0, 0.5, 1],
             ease: "easeOut",
-            delay: delay + i * 0.1,
+            delay: delay + i * 0.08,
           }}
-          style={{ display: "inline-block", marginRight: "0.28em" }}
+          style={{ display: "inline-block", marginRight: "0.28em", willChange: "filter, opacity, transform" }}
         >
           {word}
         </motion.span>

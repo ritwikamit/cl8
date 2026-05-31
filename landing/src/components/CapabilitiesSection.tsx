@@ -31,16 +31,12 @@ export default function CapabilitiesSection() {
         className="absolute inset-0 w-full h-full object-cover z-0"
       />
 
-      {/* Subtle vignette */}
-      <div className="absolute inset-0 z-[1]" style={{
-        background: "radial-gradient(ellipse 70% 50% at 50% 50%, transparent 20%, rgba(0,0,0,0.35) 100%)",
-        pointerEvents: "none",
-      }} />
+      {/* Stronger vignette for section contrast */}
+      <div className="absolute inset-0 z-[1] vignette-dark" />
 
       <div className="relative z-10 px-8 md:px-16 lg:px-20 pt-28 pb-16 flex flex-col min-h-screen">
-        {/* Header */}
         <div className="mb-auto">
-          <p className="text-sm font-medium text-white/60 mb-6 tracking-widest uppercase">// Capabilities</p>
+          <p className="text-sm font-medium text-white/70 mb-6 tracking-widest uppercase">// Capabilities</p>
           <BlurText
             text="Terminal evolved"
             className="font-heading italic text-white text-6xl md:text-7xl lg:text-[6rem] leading-[0.9] tracking-[-3px] justify-start"
@@ -48,7 +44,6 @@ export default function CapabilitiesSection() {
           />
         </div>
 
-        {/* Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-20">
           {cards.map((card, i) => (
             <motion.div
@@ -57,7 +52,7 @@ export default function CapabilitiesSection() {
               whileInView={{ filter: "blur(0px)", opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.7, ease: "easeOut", delay: 0.2 + i * 0.15 }}
-              className="liquid-glass rounded-[1.25rem] p-7 min-h-[380px] flex flex-col"
+              className="liquid-glass rounded-[1.25rem] p-8 min-h-[400px] flex flex-col"
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="liquid-glass w-11 h-11 rounded-[0.75rem] flex items-center justify-center">
@@ -67,7 +62,7 @@ export default function CapabilitiesSection() {
                 </div>
                 <div className="flex flex-wrap justify-end gap-1.5 max-w-[65%]">
                   {card.tags.map((tag) => (
-                    <span key={tag} className="liquid-glass rounded-full px-3 py-1 text-[11px] text-white/80 font-medium whitespace-nowrap">
+                    <span key={tag} className="liquid-glass rounded-full px-3 py-1 text-[11px] text-white/90 font-medium whitespace-nowrap">
                       {tag}
                     </span>
                   ))}
@@ -83,7 +78,7 @@ export default function CapabilitiesSection() {
                 >
                   {card.title}
                 </h3>
-                <p className="mt-4 text-sm text-white/80 font-body leading-relaxed max-w-[32ch] font-normal">
+                <p className="mt-4 text-sm text-white/90 font-body leading-relaxed max-w-[32ch] font-normal">
                   {card.body}
                 </p>
               </div>

@@ -83,7 +83,7 @@ export default function FadingVideo({
       playsInline
       preload="auto"
       className={className}
-      style={{ opacity: 0, ...style }}
+      style={{ opacity: 0, willChange: "opacity", ...style }}
     />
   );
 }
