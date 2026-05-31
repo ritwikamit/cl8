@@ -1,39 +1,62 @@
 import { motion } from "framer-motion";
-import BlurText from "./BlurText";
 
-const item = (d: number) => ({
-  initial: { filter: "blur(10px)", opacity: 0, y: 20 },
-  animate: { filter: "blur(0px)", opacity: 1, y: 0 },
-  transition: { duration: 0.7, ease: "easeOut", delay: d },
-});
+const commands = [
+  { cmd: "npx @ritwikamit/cl8", desc: "Start CL8" },
+  { cmd: "cl8 --model ollama", desc: "Use local Ollama" },
+  { cmd: "cl8 --model openai", desc: "Use OpenAI" },
+  { cmd: "cl8 --model gemini", desc: "Use Gemini" },
+];
 
 export default function CliSection() {
   return (
-    <section id="cli" className="relative min-h-screen w-screen overflow-hidden bg-black flex items-center justify-center scroll-mt-28">
-      <div className="absolute inset-0 z-0">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_50%,rgba(0,170,255,0.08),transparent_70%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_40%_at_50%_80%,rgba(147,51,234,0.06),transparent_60%)]" />
-      </div>
+    <section id="cli" className="relative min-h-screen w-screen overflow-hidden bg-black flex items-center">
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_40%_at_50%_60%,rgba(255,255,255,0.03),transparent_70%)]" />
 
-      <div className="relative z-10 px-8 md:px-16 lg:px-20 py-24 flex flex-col items-center text-center max-w-4xl">
-        <motion.p {...item(0)} className="text-sm font-medium text-white/70 mb-6 tracking-widest uppercase">// CLI</motion.p>
+      <div className="relative z-10 w-full px-8 md:px-16 lg:px-24 py-24">
+        <div className="max-w-7xl mx-auto w-full">
+          <p className="overline mb-3">CLI</p>
+          <h2 className="font-heading italic text-white text-[clamp(2.5rem,8vw,5rem)] leading-[0.85] tracking-[-3px] md:tracking-[-4px]">
+            One command.<br />
+            <span className="text-white/50">Your whole stack.</span>
+          </h2>
 
-        <BlurText
-          text="Built for the terminal native"
-          className="font-heading italic text-white text-5xl md:text-6xl lg:text-7xl leading-[0.9] tracking-[-3px] justify-center text-glow"
-          delay={0.2}
-        />
+          <div className="divider my-16" />
 
-        <motion.p {...item(0.4)} className="mt-8 text-base md:text-lg text-white/90 max-w-2xl font-body leading-relaxed font-normal text-glow">
-          No bloated IDE plugin. No Electron app. CL8 lives in your terminal, where you already work. One npx command is all it takes.
-        </motion.p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
+            <div>
+              <p className="text-sm text-white/40 font-body font-normal leading-relaxed max-w-md">
+                No bloated plugin. No Electron app. CL8 is a single npx invocation — or install it globally and it's always ready in your terminal.
+              </p>
+              <div className="mt-8 space-y-4">
+                {commands.map((c, i) => (
+                  <motion.div
+                    key={c.cmd}
+                    initial={{ opacity: 0, x: -10 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.4, delay: 0.1 + i * 0.08 }}
+                    className="flex items-center gap-4"
+                  >
+                    <code className="text-sm text-white/80 font-mono bg-white/[0.03] px-4 py-2 rounded-lg border border-white/[0.06] min-w-[220px]">
+                      {c.cmd}
+                    </code>
+                    <span className="text-xs text-white/30 font-body">{c.desc}</span>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
 
-        <motion.div {...item(0.6)} className="mt-10 liquid-glass rounded-2xl p-8 w-full max-w-2xl text-left">
-          <code className="text-sm md:text-base text-white/90 font-mono leading-relaxed block">
-            <span className="text-green-400">$</span> npx @ritwikamit/cl8<br />
-            <span className="text-white/60 mt-2 block">▸ Connected to Ollama (llama3.2)<br />▸ Ready — ask me anything about your code</span>
-          </code>
-        </motion.div>
+            <div className="surface-card rounded-2xl p-8">
+              <p className="text-xs text-white/30 font-body font-medium mb-4">Terminal output</p>
+              <code className="text-sm text-white/60 font-mono leading-loose block">
+                <span className="text-white/40">$</span> npx @ritwikamit/cl8<br />
+                <span className="text-white/30">▸ Connected to Ollama (llama3.2)<br />
+                ▸ CL8 ready · 3 providers available<br /><br />
+                <span className="text-white/60">&gt;</span> Write a React hook for debounce</span>
+              </code>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   );

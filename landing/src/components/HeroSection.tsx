@@ -1,19 +1,12 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
 import FadingVideo from "./FadingVideo";
-import BlurText from "./BlurText";
-
-const item = (d: number) => ({
-  initial: { filter: "blur(10px)", opacity: 0, y: 20 },
-  animate: { filter: "blur(0px)", opacity: 1, y: 0 },
-  transition: { duration: 0.7, ease: "easeOut", delay: d },
-});
 
 function CopyFeedback({ copied }: { copied: boolean }) {
   return copied ? (
-    <span className="text-green-300 text-xs font-medium">Copied!</span>
+    <span className="text-xs text-white/40">copied</span>
   ) : (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <path d="M7 17L17 7" />
       <path d="M7 7h10v10" />
     </svg>
@@ -30,88 +23,65 @@ export default function HeroSection() {
   };
 
   return (
-    <section id="home" className="relative h-screen w-screen overflow-hidden bg-black scroll-mt-28">
+    <section id="home" className="relative h-screen w-screen overflow-hidden bg-black">
       <FadingVideo
         src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260418_080021_d598092b-c4c2-4e53-8e46-94cf9064cd50.mp4"
-        className="absolute left-1/2 top-0 -translate-x-1/2 object-cover object-top z-0"
-        style={{ width: "120%", height: "120%" }}
+        className="absolute inset-0 w-full h-full object-cover z-0 scale-110"
       />
 
-      <div className="absolute inset-0 z-[1] vignette-hero" />
+      <div className="absolute inset-0 z-[1] vignette" />
 
       <div className="relative z-10 flex flex-col h-full">
-        {/* Navbar */}
-        <nav className="fixed top-5 left-0 right-0 z-50 px-8 lg:px-16 flex items-center justify-between">
-          <a href="#home" className="flex flex-col items-center gap-0.5 group">
-            <div className="liquid-glass w-9 h-9 rounded-lg flex items-center justify-center group-hover:scale-105 transition-transform">
-              <div className="w-4 h-4 rounded-[3px] bg-gradient-to-br from-[#00aaff] to-[#9333ea]" />
-            </div>
-            <span className="text-[10px] font-bold tracking-[1.5px] text-white/70 uppercase leading-none">
-              CL8
-            </span>
+        {/* Nav */}
+        <nav className="fixed top-0 left-0 right-0 z-50 px-8 lg:px-16 h-20 flex items-center justify-between" style={{ background: "linear-gradient(180deg, rgba(0,0,0,0.4) 0%, transparent 100%)" }}>
+          <a href="#home" className="text-2xl font-heading italic text-white tracking-[-1px]">
+            CL8
           </a>
 
-          <div className="hidden lg:flex liquid-glass rounded-full px-1.5 py-1.5 items-center gap-1">
-            {[
-              { label: "Home", href: "#home" },
-              { label: "Features", href: "#features" },
-              { label: "CLI", href: "#cli" },
-              { label: "About", href: "#about" },
-              { label: "Blog", href: "#blog" },
-            ].map((l) => (
-              <a
-                key={l.label}
-                href={l.href}
-                className="px-4 py-2 text-sm font-normal text-white/80 hover:text-white transition-colors"
-              >
-                {l.label}
+          <div className="hidden md:flex items-center gap-8">
+            {["Features", "CLI", "About", "Blog"].map((l) => (
+              <a key={l} href={`#${l.toLowerCase()}`} className="text-sm text-white/50 hover:text-white/90 transition-colors font-body font-normal tracking-wide">
+                {l}
               </a>
             ))}
             <button
               onClick={copyNpx}
-              className="bg-white text-black rounded-full px-5 py-2 text-sm font-semibold whitespace-nowrap flex items-center gap-2 hover:bg-white/90 transition-all cursor-pointer"
+              className="surface rounded-full px-5 py-2 text-sm text-white/80 flex items-center gap-2 cursor-pointer hover:text-white transition-colors"
             >
-              <span>npx @ritwikamit/cl8</span>
+              <span className="font-body font-normal">npx @ritwikamit/cl8</span>
               <CopyFeedback copied={copied} />
             </button>
           </div>
 
-          {/* Mobile npx button */}
           <button
             onClick={copyNpx}
-            className="lg:hidden liquid-glass rounded-full px-4 py-2 text-sm font-medium text-white flex items-center gap-2 cursor-pointer"
+            className="md:hidden surface rounded-full px-4 py-2 text-sm text-white/70 flex items-center gap-2 cursor-pointer"
           >
             <span className="text-xs">npx @ritwikamit/cl8</span>
             <CopyFeedback copied={copied} />
           </button>
         </nav>
 
-        {/* Hero content */}
-        <div className="flex-1 flex flex-col items-center justify-center text-center px-6 pt-24">
-          <motion.div {...item(0.4)} className="liquid-glass rounded-full inline-flex items-center gap-2 px-1 py-1 mb-8">
-            <span className="bg-white text-black rounded-full px-3 py-1 text-xs font-semibold">New</span>
-            <span className="text-sm text-white/90 pr-3 font-medium text-glow">npx @ritwikamit/cl8 — instant AI in your terminal</span>
-          </motion.div>
-
-          <div className="max-w-4xl">
-            <BlurText
-              text="Code Beyond the Limits of Terminal"
-              className="text-6xl md:text-7xl lg:text-[5.5rem] font-heading italic text-white leading-[0.85] justify-center tracking-[-4px] text-glow"
-              delay={0.5}
-            />
+        {/* Center */}
+        <div className="flex-1 flex flex-col items-center justify-center px-8">
+          <div className="max-w-5xl text-center">
+            <p className="overline mb-6">Terminal AI · v0.1.0</p>
+            <h1 className="font-heading italic text-white text-[clamp(3rem,12vw,8rem)] leading-[0.82] tracking-[-4px] md:tracking-[-6px]">
+              Code beyond<br />
+              <span className="bg-gradient-to-r from-white/90 via-white/70 to-white/90 bg-clip-text text-transparent">the terminal</span>
+            </h1>
+            <p className="mt-8 text-base md:text-lg text-white/50 max-w-xl mx-auto font-body font-normal leading-relaxed">
+              An AI assistant that lives in your command line. Connect Ollama, OpenAI, or Gemini — local or cloud — and ship code faster.
+            </p>
           </div>
 
-          <motion.p {...item(0.8)} className="mt-6 text-base md:text-lg text-white/90 max-w-2xl font-body leading-relaxed font-normal text-glow">
-            Discover a terminal experience once unimaginable. Our AI-powered assistant brings deep coding intelligence within reach — secure, fast, and extraordinary.
-          </motion.p>
-
-          <motion.div {...item(1.1)} className="flex items-center gap-6 mt-8">
+          <div className="flex items-center gap-5 mt-10">
             <button
               onClick={copyNpx}
-              className="liquid-glass-strong rounded-full px-7 py-3 text-base font-medium text-white flex items-center gap-3 cursor-pointer hover:scale-[1.03] transition-transform"
+              className="surface rounded-full px-7 py-3 text-sm text-white flex items-center gap-3 cursor-pointer hover:bg-white/10 transition-all"
             >
-              <span>Start Your Voyage</span>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <span>Install CL8</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
                 <path d="M7 17L17 7" />
                 <path d="M7 7h10v10" />
               </svg>
@@ -120,59 +90,24 @@ export default function HeroSection() {
               href="https://github.com/ritwikamit/cl8"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 text-base text-white/80 hover:text-white transition-colors font-medium text-glow"
+              className="text-sm text-white/40 hover:text-white/80 transition-colors flex items-center gap-2"
             >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                 <polygon points="6 4 20 12 6 20 6 4" />
               </svg>
-              View on GitHub
+              GitHub
             </a>
-          </motion.div>
-
-          <motion.div {...item(1.3)} className="flex items-stretch gap-6 mt-14">
-            <div className="liquid-glass p-7 w-[240px] rounded-[1.25rem]">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="10" />
-                <polyline points="12 6 12 12 16 14" />
-              </svg>
-              <div className="mt-4">
-                <span className="gradient-text text-5xl leading-none font-heading italic" style={{ fontFamily: "'Instrument Serif', serif" }}>
-                  0.3s
-                </span>
-              </div>
-              <div className="text-sm text-white/80 font-body mt-2 font-medium">Avg. Response Time</div>
-            </div>
-            <div className="liquid-glass p-7 w-[240px] rounded-[1.25rem]">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="10" />
-                <line x1="2" y1="12" x2="22" y2="12" />
-                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-              </svg>
-              <div className="mt-4">
-                <span className="gradient-text text-5xl leading-none font-heading italic" style={{ fontFamily: "'Instrument Serif', serif" }}>
-                  3+ Models
-                </span>
-              </div>
-              <div className="text-sm text-white/80 font-body mt-2 font-medium">Ollama · OpenAI · Gemini</div>
-            </div>
-          </motion.div>
+          </div>
         </div>
 
-        {/* Partners */}
-        <motion.div {...item(1.4)} className="flex flex-col items-center gap-4 pb-10">
-          <div className="liquid-glass rounded-full px-4 py-1.5 text-xs font-medium text-white/80">
-            Powered by leading AI providers
-          </div>
-          <div
-            className="flex items-center gap-12 md:gap-16 text-2xl md:text-3xl tracking-tight text-white/80 font-heading italic"
-          >
-            <span>Ollama</span>
-            <span className="text-white/30">·</span>
-            <span>OpenAI</span>
-            <span className="text-white/30">·</span>
-            <span>Gemini</span>
-          </div>
-        </motion.div>
+        {/* Bottom */}
+        <div className="pb-8 flex items-center justify-center gap-12 text-sm text-white/30 font-body font-normal">
+          <span>0.3s avg response</span>
+          <span className="w-0.5 h-0.5 rounded-full bg-white/20" />
+          <span>3+ models</span>
+          <span className="w-0.5 h-0.5 rounded-full bg-white/20" />
+          <span>Ollama · OpenAI · Gemini</span>
+        </div>
       </div>
     </section>
   );
