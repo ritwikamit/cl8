@@ -1,22 +1,21 @@
 import { Command } from 'commander';
 import chalk from 'chalk';
-import figlet from 'figlet';
-import gradient from 'gradient-string';
 import { createLogger } from '../utils/logger.js';
 import { loadConfig } from '../config/index.js';
 import { chatCommand } from './commands/chat.js';
 import { initCommand } from './commands/init.js';
 import { sessionCommand } from './commands/session.js';
 import { configCommand } from './commands/config.js';
+import { selectLogoVariant, renderLogo } from '../ui/pixel-logo.js';
+import pkg from '../../package.json';
 
 function showBanner(): void {
-  const text = figlet.textSync('CL8', {
-    font: 'ANSI Shadow',
-    horizontalLayout: 'default',
-  });
-  console.log(gradient.pastel.multiline(text));
+  const columns = process.stdout.columns || 100;
+  const variant = selectLogoVariant(columns);
+  const logo = renderLogo(variant, columns, false);
+  console.log(logo);
   console.log(chalk.cyan('  Terminal AI Coding & Automation Assistant\n'));
-  console.log(chalk.dim('  Version 0.1.0 · Type /help for commands\n'));
+  console.log(chalk.dim(`  Version ${pkg.version} · Type /help for commands\n`));
 }
 
 export function createCLI(): Command {
@@ -28,7 +27,7 @@ export function createCLI(): Command {
   program
     .name('cl8')
     .description('Terminal AI Coding & Automation Assistant')
-    .version('0.1.0')
+    .version(pkg.version)
     .addHelpText('beforeAll', () => { showBanner(); return ''; });
 
   program
@@ -38,6 +37,11 @@ export function createCLI(): Command {
     .option('-m, --model <model>', 'Model name')
     .option('-w, --workspace <path>', 'Workspace directory')
     .option('-s, --session <id>', 'Resume session')
+    .option('--reduced-motion', 'Disable animations and transitions')
+    .option('--high-contrast', 'Enable high contrast mode')
+    .option('--no-splash', 'Skip startup splash screen')
+    .option('--reset-onboarding', 'Reset first-launch onboarding')
+    .option('--theme <mode>', 'Color theme (dark, light, auto)')
     .action(async (options) => {
       await chatCommand(options);
     });

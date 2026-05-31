@@ -1,0 +1,22 @@
+[
+  "Use /help to discover all available commands",
+  "Reference files using @filename in your prompts",
+  "Use /clear to reset the conversation",
+  "Use /status to check current session info",
+  "Press Ctrl+C to cancel the current operation",
+  "Press Ctrl+D to exit CL8",
+  "Use multi-line input with \\\\ at end of line",
+  "CL8 supports OpenAI, Gemini, and Ollama providers",
+  "Use /mode ask|auto|deny to change approval mode",
+  "Use --provider to switch AI providers on the fly",
+  "Workspace files are protected from dangerous operations",
+  "Use /session to inspect your current session",
+  "CL8 automatically saves conversation history",
+  "You can resume sessions with --session <id>",
+  "Use /config to view or change settings",
+  "CL8 runs entirely locally when using Ollama",
+  "Use cl8 init to reconfigure your setup",
+  "Use cl8 doctor to check system health",
+  "Type naturally - CL8 understands plain English requests",
+  "CL8 can read, write, and edit files in your workspace"
+]

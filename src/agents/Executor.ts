@@ -31,10 +31,11 @@ export class Executor {
 
     if (result.output.success) {
       step.status = 'completed';
-      step.result = result.output.stdout || result.output.data as any;
+      const output = result.output.stdout ?? this.stringifyOutput(result.output.data);
+      step.result = output;
       return {
         success: true,
-        output: result.output.stdout || JSON.stringify(result.output.data || ''),
+        output,
       };
     } else {
       step.status = 'failed';
@@ -66,5 +67,10 @@ export class Executor {
     }
 
     return results;
+  }
+
+  private stringifyOutput(data: unknown): string {
+    if (typeof data === 'string') return data;
+    return JSON.stringify(data ?? '');
   }
 }

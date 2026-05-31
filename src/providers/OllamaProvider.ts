@@ -23,6 +23,16 @@ interface OllamaResponse {
   eval_count?: number;
 }
 
+interface OllamaOptions {
+  temperature?: number;
+  top_p?: number;
+  num_predict?: number;
+  num_ctx?: number;
+}
+
+const DEFAULT_NUM_CTX = 4096;
+const DEFAULT_NUM_PREDICT = 2048;
+
 export class OllamaProvider extends BaseProvider {
   private baseUrl: string;
 
@@ -36,7 +46,7 @@ export class OllamaProvider extends BaseProvider {
       streaming: true,
       toolCalling: false,
       vision: false,
-      maxContextTokens: 8192,
+      maxContextTokens: DEFAULT_NUM_CTX,
     };
   }
 
@@ -48,9 +58,7 @@ export class OllamaProvider extends BaseProvider {
         model: this.config.model,
         messages: this.formatMessagesForOllama(request.messages, request.systemPrompt),
         stream: false,
-        options: {
-          temperature: request.temperature ?? this.config.temperature,
-        },
+        options: this.buildOptions(request),
       }),
     });
 
@@ -83,9 +91,7 @@ export class OllamaProvider extends BaseProvider {
         model: this.config.model,
         messages: this.formatMessagesForOllama(request.messages, request.systemPrompt),
         stream: true,
-        options: {
-          temperature: request.temperature ?? this.config.temperature,
-        },
+        options: this.buildOptions(request),
       }),
     });
 
@@ -137,6 +143,15 @@ export class OllamaProvider extends BaseProvider {
   async countTokens(messages: AgentMessage[]): Promise<number> {
     const text = messages.map(m => m.content).join('\n');
     return Math.ceil(text.length / 4);
+  }
+
+  private buildOptions(request: ChatCompletionRequest): OllamaOptions {
+    return {
+      temperature: request.temperature ?? this.config.temperature,
+      top_p: request.topP ?? this.config.topP,
+      num_predict: request.maxTokens ?? DEFAULT_NUM_PREDICT,
+      num_ctx: DEFAULT_NUM_CTX,
+    };
   }
 
   private formatMessagesForOllama(

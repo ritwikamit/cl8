@@ -36,6 +36,13 @@ export class FileTool extends BaseTool {
     const operation = input.operation as FileOperation;
     const filePath = input.path as string;
 
+    if (!filePath) {
+      return { success: false, error: 'Missing required field: path' };
+    }
+    if (!context.workspace) {
+      return { success: false, error: 'No workspace configured' };
+    }
+
     const safePath = this.resolveSafePath(filePath, context.workspace);
 
     try {
@@ -62,8 +69,8 @@ export class FileTool extends BaseTool {
   }
 
   private resolveSafePath(filePath: string, workspace: string): string {
-    const resolved = path.resolve(workspace, filePath);
-    const normalizedWorkspace = path.resolve(workspace);
+    const resolved = path.resolve(workspace || '.', filePath);
+    const normalizedWorkspace = path.resolve(workspace || '.');
 
     if (!resolved.startsWith(normalizedWorkspace)) {
       throw new Error(`Access denied: path ${filePath} is outside workspace`);

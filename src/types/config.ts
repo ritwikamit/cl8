@@ -55,4 +55,5 @@ export interface CL8Config {
   plugins: PluginConfig;
   theme: string;
   historySize: number;
+  onboardingComplete?: boolean;
 }

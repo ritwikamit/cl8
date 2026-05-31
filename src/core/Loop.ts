@@ -1,19 +1,23 @@
 import readline from 'node:readline';
 import chalk from 'chalk';
 import { Engine } from './Engine.js';
-import { Spinner } from '../ui/Spinner.js';
+import { SpinnerManager, SpinnerState } from '../ui/spinner-manager.js';
 import { StreamingOutput } from '../ui/StreamingOutput.js';
 import { markdown } from '../ui/MarkdownRenderer.js';
+import { ThemeManager } from '../ui/theme-manager.js';
 import { generateId } from '../utils/crypto.js';
-import { AgentMessage } from '../types/agent.js';
+import { AgentMessage, AgentStatus } from '../types/agent.js';
 import { getLogger } from '../utils/logger.js';
 
-const BANNER = `
-  ╔═══════════════════════════════════════════╗
-  ║             ⚡ CL8 v0.1.0                ║
-  ║     Terminal AI Coding Assistant          ║
-  ╚═══════════════════════════════════════════╝
-`;
+const STATUS_MAP: Record<AgentStatus, SpinnerState> = {
+  idle: 'thinking',
+  thinking: 'thinking',
+  planning: 'planning',
+  executing: 'executing',
+  reflecting: 'reflecting',
+  responding: 'responding',
+  error: 'thinking',
+};
 
 const SLASH_COMMANDS: Record<string, { description: string; handler: (args: string) => Promise<string | null> }> = {
   '/help': {
@@ -60,17 +64,19 @@ const SLASH_COMMANDS: Record<string, { description: string; handler: (args: stri
 export class InteractiveLoop {
   private engine: Engine;
   private sessionId: string;
-  private spinner: Spinner;
+  private spinner: SpinnerManager;
   private output: StreamingOutput;
   private rl: readline.Interface;
   private logger = getLogger();
   private running = true;
   private multiLineBuffer: string[] = [];
+  private theme: ThemeManager;
 
-  constructor(engine: Engine) {
+  constructor(engine: Engine, theme: ThemeManager, sessionId?: string) {
     this.engine = engine;
-    this.sessionId = generateId();
-    this.spinner = new Spinner();
+    this.theme = theme;
+    this.sessionId = sessionId || generateId();
+    this.spinner = new SpinnerManager();
     this.output = new StreamingOutput();
 
     this.rl = readline.createInterface({
@@ -83,21 +89,13 @@ export class InteractiveLoop {
 
   async start(): Promise<void> {
     await this.engine.initialize();
-    this.showBanner();
     this.showHelpHint();
     await this.promptLoop();
   }
 
-  private showBanner(): void {
-    console.log(chalk.cyan(BANNER));
-    console.log(chalk.dim(`  Session: ${this.sessionId.slice(0, 8)}...`));
-    console.log(chalk.dim(`  Provider: ${this.engine.getConfig().ai.defaultProvider}`));
-    console.log('');
-  }
-
   private showHelpHint(): void {
-    console.log(chalk.dim('  Type /help for commands, Ctrl+C to cancel, Ctrl+D to exit'));
-    console.log('');
+    console.log(chalk.dim('  Type /help for commands · Ctrl+C to cancel · Ctrl+D to exit'));
+    console.log();
   }
 
   private async promptLoop(): Promise<void> {
@@ -136,7 +134,7 @@ export class InteractiveLoop {
 
   private getInput(): Promise<string | null> {
     return new Promise(resolve => {
-      this.rl.question(chalk.cyan('cl8> '), (answer: string) => {
+      this.rl.question(`${chalk.hex('#6C5CE7')('cl8')}${chalk.dim(' > ')}`, (answer: string) => {
         resolve(answer);
       });
       this.rl.on('SIGINT', () => {
@@ -156,17 +154,19 @@ export class InteractiveLoop {
 
     await this.engine.addMessage(this.sessionId, userMessage);
 
-    console.log(chalk.dim('─── Processing ───────────────────────────────'));
-
     try {
       const stream = await this.engine.processUserInput(input, this.sessionId);
-
+      this.spinner.start('thinking');
       this.output.start();
 
       for await (const chunk of stream) {
+        this.spinner.stop();
         this.output.append(chunk);
+        const status = this.engine.getAgent().getState().status;
+        this.spinner.start(STATUS_MAP[status] || 'thinking');
       }
 
+      this.spinner.succeed();
       this.output.stop();
 
       const responseContent = this.output.getContent();
@@ -179,12 +179,11 @@ export class InteractiveLoop {
 
       await this.engine.addMessage(this.sessionId, assistantMessage);
     } catch (err) {
+      this.spinner.fail();
       const message = err instanceof Error ? err.message : String(err);
       console.log(chalk.red(`\n✖ Error: ${message}\n`));
       this.logger.error('Processing error', { error: message });
     }
-
-    console.log(chalk.dim('──────────────────────────────────────────────\n'));
   }
 
   private async handleCommand(input: string): Promise<void> {
@@ -200,7 +199,6 @@ export class InteractiveLoop {
     if (cmd === '/clear') {
       this.output.clear();
       console.clear();
-      this.showBanner();
       return;
     }
 
@@ -239,6 +237,6 @@ export class InteractiveLoop {
   private cleanup(): void {
     this.rl.close();
     this.engine.shutdown();
-    console.log(chalk.cyan('\n  Goodbye! 👋\n'));
+    console.log(chalk.hex('#6C5CE7')('\n  Goodbye! 👋\n'));
   }
 }

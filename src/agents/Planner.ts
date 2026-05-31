@@ -4,11 +4,6 @@ import { BaseProvider } from '../providers/BaseProvider.js';
 import { getLogger } from '../utils/logger.js';
 import { generateId } from '../utils/crypto.js';
 
-interface PlanResult {
-  steps: PlanStep[];
-  reasoning: string;
-}
-
 export class Planner {
   private provider: BaseProvider;
   private tools: ToolDefinition[];
@@ -22,7 +17,7 @@ export class Planner {
   async createPlan(
     userInput: string,
     context: AgentMessage[],
-    previousResults?: ExecutionResult[]
+    _previousResults?: ExecutionResult[]
   ): Promise<AgentThought> {
     const toolsDesc = this.tools
       .map(t => `- ${t.name}: ${t.description} (${t.category})`)
@@ -51,7 +46,12 @@ Respond with a structured plan.`;
       },
     ];
 
-    const response = await this.provider.chat({ messages, systemPrompt });
+    const response = await this.provider.chat({
+      messages,
+      systemPrompt,
+      maxTokens: 512,
+      temperature: 0.3,
+    });
 
     const steps = this.parseSteps(response.content);
 
@@ -78,10 +78,14 @@ Respond with a structured plan.`;
       },
     ];
 
-    const response = await this.provider.chat({ messages });
+    const response = await this.provider.chat({
+      messages,
+      maxTokens: 512,
+      temperature: 0.3,
+    });
 
     return {
-      step: failedStep.id as any,
+      step: 0,
       reasoning: response.content,
       plan: this.parseSteps(response.content).map(s => s.description),
     };

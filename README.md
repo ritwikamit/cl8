@@ -8,9 +8,9 @@
 
 ---
 
-[![CI](https://github.com/YOUR_USERNAME/cl8/actions/workflows/ci.yml/badge.svg)](https://github.com/YOUR_USERNAME/cl8/actions/workflows/ci.yml)
-[![npm version](https://img.shields.io/npm/v/cl8.svg?color=4ECDC4)](https://www.npmjs.com/package/cl8)
-[![npm downloads](https://img.shields.io/npm/dm/cl8.svg?color=45B7D1)](https://www.npmjs.com/package/cl8)
+[![CI](https://github.com/ritwikamit/cl8/actions/workflows/ci.yml/badge.svg)](https://github.com/ritwikamit/cl8/actions/workflows/ci.yml)
+[![npm version](https://img.shields.io/npm/v/@ritwikamit/cl8.svg?color=4ECDC4)](https://www.npmjs.com/package/@ritwikamit/cl8)
+[![npm downloads](https://img.shields.io/npm/dm/@ritwikamit/cl8.svg?color=45B7D1)](https://www.npmjs.com/package/@ritwikamit/cl8)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/%3C%2F%3E-TypeScript-3178C6)](https://www.typescriptlang.org/)
 [![Node](https://img.shields.io/badge/Node-%3E%3D18-339933)](https://nodejs.org/)
@@ -282,112 +282,52 @@ cl8/
 - **npm** v9.0.0 or higher
 - An API key for your preferred AI provider (optional for Ollama)
 
-### 1. Install Node.js
-
-If you don't have Node.js installed:
+### ⚡ One-Liner Install
 
 **Windows (PowerShell)**:
 ```powershell
-# Using winget (Windows 11/10)
-winget install OpenJS.NodeJS.LTS
+# Option A: Run instantly with npx (no install needed)
+npx @ritwikamit/cl8
 
-# Or using fnm (recommended)
-winget install Schniz.fnm
-fnm install 22
-fnm use 22
+# Option B: Install globally
+npm install -g @ritwikamit/cl8
+cl8
+
+# Option C: Automated installer
+irm https://raw.githubusercontent.com/ritwikamit/cl8/main/scripts/install.ps1 | iex
 ```
 
-**Verify installation**:
-```powershell
-node --version
-npm --version
+**macOS / Linux**:
+```bash
+# Option A: Run instantly with npx (no install needed)
+npx @ritwikamit/cl8
+
+# Option B: Install globally
+npm install -g @ritwikamit/cl8
+cl8
+
+# Option C: Automated installer
+curl -fsSL https://raw.githubusercontent.com/ritwikamit/cl8/main/scripts/install.sh | bash
 ```
 
-### 2. Clone the Repository
+### 2. Configure Your AI Provider
 
-```powershell
-git clone https://github.com/YOUR_USERNAME/cl8.git
-cd cl8
-```
+```bash
+# Run the setup wizard
+cl8 init
 
-### 3. Install Dependencies
-
-```powershell
-npm install
-```
-
-This installs all runtime and development dependencies.
-
-### 4. Set Up Environment Configuration
-
-```powershell
-# Copy the example environment file
+# Or configure manually by creating .env:
 cp .env.example .env
+# Then edit .env with your API keys
 ```
 
-### 5. Configure Your AI Provider
+### 3. Start Using CL8
 
-Edit the `.env` file with your preferred AI provider:
-
-**For OpenAI**:
-```env
-OPENAI_API_KEY=sk-your-key-here
-OPENAI_MODEL=gpt-4o
-CL8_DEFAULT_PROVIDER=openai
-```
-
-**For Google Gemini**:
-```env
-GEMINI_API_KEY=your-key-here
-GEMINI_MODEL=gemini-2.0-flash
-CL8_DEFAULT_PROVIDER=gemini
-```
-
-**For Ollama (local)**:
-```env
-OLLAMA_BASE_URL=http://localhost:11434
-OLLAMA_MODEL=codellama
-CL8_DEFAULT_PROVIDER=ollama
-```
-
-> **💡 Tip**: If you don't have an API key yet, Ollama runs completely locally. Install [Ollama](https://ollama.ai) and pull a model:
-> ```powershell
-> ollama pull codellama
-> ```
-
-### 6. Build the Project
-
-```powershell
-npm run build
-```
-
-This compiles TypeScript to JavaScript in the `dist/` directory.
-
-### 7. Run Locally (Development Mode)
-
-```powershell
-npm run dev
-```
-
-Or use the built version:
-
-```powershell
-node dist/bin/cl8.js
-```
-
-### 8. Install Globally (Optional)
-
-```powershell
-npm install -g .
-```
-
-Now you can run `cl8` from anywhere:
-
-```powershell
+```text
 cl8
 ```
 
-### 9. Example Usage Commands
+### 4. Example Commands
 
 Once CL8 is running, try these:
 
@@ -602,6 +542,6 @@ Built with ❤️ for the open-source community.
 
 **⭐ Star us on GitHub — it helps!**
 
-[Report Bug](https://github.com/YOUR_USERNAME/cl8/issues) · [Request Feature](https://github.com/YOUR_USERNAME/cl8/issues) · [Join Discussions](https://github.com/YOUR_USERNAME/cl8/discussions)
+[Report Bug](https://github.com/ritwikamit/cl8/issues) · [Request Feature](https://github.com/ritwikamit/cl8/issues)
 
 </div>

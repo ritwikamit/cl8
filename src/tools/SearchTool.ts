@@ -34,6 +34,14 @@ export class SearchTool extends BaseTool {
 
   async execute(input: ToolInput, context: ToolContext): Promise<ToolOutput> {
     const pattern = input.pattern as string;
+
+    if (!pattern) {
+      return { success: false, error: 'Missing required field: pattern' };
+    }
+    if (!context.workspace) {
+      return { success: false, error: 'No workspace configured' };
+    }
+
     const maxResults = (input.maxResults as number) || 50;
     const searchPath = input.path
       ? path.resolve(context.workspace, input.path as string)

@@ -43,3 +43,7 @@ plugins/*/
 
 # Config storage
 .config/
+
+# Workspace runtime data
+workspace/conversations/
+workspace/sessions/

@@ -1,46 +1,62 @@
-import ora, { Ora } from 'ora';
+import ora, { Ora, Color } from 'ora';
 import chalk from 'chalk';
 
-type SpinnerState = 'thinking' | 'planning' | 'executing' | 'reflecting' | 'searching' | 'writing';
+export type SpinnerState = 'thinking' | 'planning' | 'executing' | 'reflecting' | 'searching' | 'writing' | 'responding';
 
-const SPINNER_MESSAGES: Record<SpinnerState, string> = {
-  thinking: chalk.cyan('Thinking...'),
-  planning: chalk.yellow('Planning...'),
-  executing: chalk.green('Executing...'),
-  reflecting: chalk.magenta('Reflecting...'),
-  searching: chalk.blue('Searching...'),
-  writing: chalk.cyan('Writing...'),
+interface SpinnerConfig {
+  text: string;
+  icon: string;
+  color: Color;
+}
+
+const SPINNER_CONFIG: Record<SpinnerState, SpinnerConfig> = {
+  thinking:   { text: 'Thinking',   icon: '🧠', color: 'cyan' },
+  planning:   { text: 'Planning',   icon: '📋', color: 'yellow' },
+  executing:  { text: 'Executing',  icon: '⚡', color: 'green' },
+  reflecting: { text: 'Reflecting', icon: '🔍', color: 'magenta' },
+  searching:  { text: 'Searching',  icon: '🔎', color: 'blue' },
+  writing:    { text: 'Writing',    icon: '✍️',  color: 'cyan' },
+  responding: { text: 'Responding', icon: '💬', color: 'cyan' },
 };
 
 export class Spinner {
   private spinner: Ora | null = null;
+  private currentState: SpinnerState | null = null;
 
   start(state: SpinnerState = 'thinking'): void {
     this.stop();
+    this.currentState = state;
+    const config = SPINNER_CONFIG[state];
     this.spinner = ora({
-      text: SPINNER_MESSAGES[state],
-      spinner: 'dots',
-      color: 'cyan',
+      text: `${chalk.bold(config.icon)} ${config.text}...`,
+      spinner: 'dots12',
+      color: config.color,
     }).start();
   }
 
   succeed(text?: string): void {
     if (this.spinner) {
-      this.spinner.succeed(text || chalk.green('Done'));
+      this.spinner.succeed(text || chalk.green('✓ Done'));
       this.spinner = null;
+      this.currentState = null;
     }
   }
 
   fail(text?: string): void {
     if (this.spinner) {
-      this.spinner.fail(text || chalk.red('Failed'));
+      this.spinner.fail(text || chalk.red('✗ Failed'));
       this.spinner = null;
+      this.currentState = null;
     }
   }
 
-  updateText(text: string): void {
+  update(state: SpinnerState): void {
+    if (state === this.currentState) return;
+    this.currentState = state;
+    const config = SPINNER_CONFIG[state];
     if (this.spinner) {
-      this.spinner.text = text;
+      this.spinner.color = config.color;
+      this.spinner.text = `${chalk.bold(config.icon)} ${config.text}...`;
     }
   }
 
@@ -48,21 +64,25 @@ export class Spinner {
     if (this.spinner) {
       this.spinner.stop();
       this.spinner = null;
+      this.currentState = null;
     }
   }
 
   info(text: string): void {
     this.stop();
-    ora({ text: chalk.blue('ℹ') + ' ' + text }).info();
+    const icon = chalk.blue('ℹ');
+    console.log(` ${icon} ${text}`);
   }
 
   warn(text: string): void {
     this.stop();
-    ora({ text: chalk.yellow('⚠') + ' ' + text }).warn();
+    const icon = chalk.yellow('⚠');
+    console.log(` ${icon} ${text}`);
   }
 
   error(text: string): void {
     this.stop();
-    ora({ text: chalk.red('✖') + ' ' + text }).fail();
+    const icon = chalk.red('✖');
+    console.log(` ${icon} ${text}`);
   }
 }

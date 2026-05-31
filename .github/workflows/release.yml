@@ -118,12 +118,12 @@ jobs:
             ## Installation
 
             ```bash
-            npm install -g cl8
+            npm install -g @ritwikamit/cl8
             ```
 
             Or update if already installed:
             ```bash
-            npm update -g cl8
+            npm update -g @ritwikamit/cl8
             ```
           draft: false
           prerelease: ${{ contains(github.ref_name, 'alpha') || contains(github.ref_name, 'beta') }}

@@ -69,24 +69,28 @@ export class Agent {
     workspace: string,
     history: AgentMessage[] = []
   ): Promise<AsyncIterable<string>> {
-    const self = this;
-    return {
-      async *[Symbol.asyncIterator]() {
-        self.state = self.createInitialState();
-        self.state.status = 'thinking';
+    return this.processUserInputStream(input, sessionId, workspace, history);
+  }
 
-        const userMessage: AgentMessage = {
-          id: generateId(),
-          role: 'user',
-          content: input,
-          timestamp: new Date(),
-        };
+  private async *processUserInputStream(
+    input: string,
+    sessionId: string,
+    workspace: string,
+    history: AgentMessage[]
+  ): AsyncGenerator<string> {
+    this.state = this.createInitialState();
+    this.state.status = 'thinking';
 
-        self.state.messages = [...history, userMessage];
-
-        yield* self.runAgentLoop(input, sessionId, workspace);
-      },
+    const userMessage: AgentMessage = {
+      id: generateId(),
+      role: 'user',
+      content: input,
+      timestamp: new Date(),
     };
+
+    this.state.messages = [...history, userMessage];
+
+    yield* this.runAgentLoop(input, sessionId, workspace);
   }
 
   private async *runAgentLoop(
@@ -94,8 +98,20 @@ export class Agent {
     sessionId: string,
     workspace: string
   ): AsyncGenerator<string> {
+    if (this.isSimpleQuery(input)) {
+      this.state.status = 'responding';
+      const response = await this.reflector.generateResponse(input, [], new Map(), {
+        step: 0,
+        reasoning: '',
+        plan: [],
+      });
+      yield response;
+      yield '\n\n';
+      this.state.status = 'idle';
+      return;
+    }
+
     this.state.status = 'planning';
-    yield '\n# 🤔 Planning\n\n';
 
     const toolContext: ToolContext = {
       workspace,
@@ -114,14 +130,18 @@ export class Agent {
     for (const step of steps) {
       yield `**Executing:** ${step.description}\n\n`;
 
-      const result = await this.executor.executeStep(step, toolContext);
-      results.set(step.id, result);
+      if (this.canAutoExecute(step)) {
+        const result = await this.executor.executeStep(step, toolContext);
+        results.set(step.id, result);
 
-      if (result.success) {
-        const preview = result.output.slice(0, 500);
-        yield `✅ ${preview}\n\n`;
+        if (result.success) {
+          const preview = result.output.slice(0, 500);
+          yield `✅ ${preview}\n\n`;
+        } else {
+          yield `❌ Error: ${result.error}\n\n`;
+        }
       } else {
-        yield `❌ Error: ${result.error}\n\n`;
+        results.set(step.id, { success: true, output: '' });
       }
 
       this.state.turn++;
@@ -133,7 +153,6 @@ export class Agent {
     }
 
     this.state.status = 'reflecting';
-    yield '\n# 🔍 Reflecting\n\n';
 
     const reflection = await this.reflector.reflect(input, steps, results, this.state.messages);
 
@@ -155,15 +174,16 @@ export class Agent {
         const newSteps = this.parsePlanSteps(thought);
         for (const step of newSteps) {
           yield `**Executing:** ${step.description}\n\n`;
-          const result = await this.executor.executeStep(step, toolContext);
-          results.set(step.id, result);
-          yield result.success ? `✅ Done\n\n` : `❌ ${result.error}\n\n`;
+          if (this.canAutoExecute(step)) {
+            const result = await this.executor.executeStep(step, toolContext);
+            results.set(step.id, result);
+            yield result.success ? `✅ Done\n\n` : `❌ ${result.error}\n\n`;
+          }
         }
       }
     }
 
     this.state.status = 'responding';
-    yield '\n# 📋 Summary\n\n';
 
     const response = await this.reflector.generateResponse(input, steps, results, thought);
     yield response;
@@ -172,8 +192,24 @@ export class Agent {
     this.state.status = 'idle';
   }
 
+  private isSimpleQuery(input: string): boolean {
+    const trimmed = input.trim().toLowerCase();
+    const greetings = ['hi', 'hello', 'hey', 'yo', 'sup', 'howdy', 'greetings', 'good morning', 'good afternoon', 'good evening'];
+    if (greetings.includes(trimmed)) return true;
+    const simplePatterns = [
+      /^(hi|hello|hey|yo|sup|howdy)(!|\.)?$/i,
+      /^(what'?s up|how are you|how'?s it going|what can you do|who are you|what are you|tell me about yourself)(\?)?$/i,
+      /^(thanks|thank you|thx|ty|ok|okay|sure|great|nice|good|awesome|cool|got it)(!|\.)?$/i,
+      /^(bye|goodbye|see you|later|cya)(!|\.)?$/i,
+    ];
+    for (const p of simplePatterns) {
+      if (p.test(trimmed)) return true;
+    }
+    return false;
+  }
+
   private parsePlanSteps(thought: AgentThought): PlanStep[] {
-    return (thought.plan || []).map((description, index) => ({
+    return (thought.plan || []).map(description => ({
       id: generateId(),
       description,
       tool: this.inferTool(description),
@@ -189,6 +225,19 @@ export class Agent {
     if (lower.includes('search') || lower.includes('find') || lower.includes('grep') || lower.includes('look')) return 'search';
     if (lower.includes('write') || lower.includes('create') || lower.includes('edit') || lower.includes('save')) return 'file';
     return 'file';
+  }
+
+  private canAutoExecute(step: PlanStep): boolean {
+    const actionableKeywords = ['read', 'write', 'edit', 'run', 'exec', 'search', 'find', 'grep', 'create', 'delete', 'install', 'list', 'cat'];
+    const lower = step.description.toLowerCase();
+    if (!actionableKeywords.some(k => lower.includes(k))) {
+      return false;
+    }
+    const analysisPatterns = ['understand what', 'identify which', 'break into', 'specify', 'consider', 'analyze'];
+    if (analysisPatterns.some(p => lower.includes(p))) {
+      return false;
+    }
+    return true;
   }
 
   getState(): AgentState {

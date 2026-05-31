@@ -47,7 +47,7 @@ export class ShellTool extends BaseTool {
     }
 
     const timeout = (input.timeout as number) || 30000;
-    const workdir = (input.workdir as string) || context.workspace;
+    const workdir = (input.workdir as string) || context.workspace || process.cwd();
 
     try {
       const startTime = Date.now();

@@ -51,7 +51,11 @@ export class Reflector {
         },
       ];
 
-      const response = await this.provider.chat({ messages });
+      const response = await this.provider.chat({
+        messages,
+        maxTokens: 512,
+        temperature: 0.3,
+      });
 
       return {
         satisfied: false,
@@ -72,8 +76,8 @@ export class Reflector {
   async generateResponse(
     userInput: string,
     steps: PlanStep[],
-    results: Map<string, ExecutionResult>,
-    thought: AgentThought
+    _results: Map<string, ExecutionResult>,
+    _thought: AgentThought
   ): Promise<string> {
     const stepsSummary = steps
       .map(s => `- ${s.description}: ${s.status}${s.result ? `\n  Result: ${s.result.slice(0, 500)}` : ''}`)
@@ -88,7 +92,11 @@ export class Reflector {
       },
     ];
 
-    const response = await this.provider.chat({ messages });
+    const response = await this.provider.chat({
+      messages,
+      maxTokens: 1024,
+      temperature: 0.5,
+    });
     return response.content;
   }
 
