@@ -21,7 +21,7 @@ const cards = [
 
 export default function CapabilitiesSection() {
   return (
-    <section id="features" className="relative min-h-screen w-screen overflow-hidden bg-black">
+    <section id="features" className="relative min-h-screen w-screen overflow-hidden bg-aura">
       <FadingVideo
         src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260418_094631_d30ab262-45ee-4b7d-99f3-5d5848c8ef13.mp4"
         className="absolute inset-0 w-full h-full object-cover z-0 scale-110"

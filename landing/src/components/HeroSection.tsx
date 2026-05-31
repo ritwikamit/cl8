@@ -23,7 +23,7 @@ export default function HeroSection() {
   };
 
   return (
-    <section id="home" className="relative h-screen w-screen overflow-hidden bg-black">
+    <section id="home" className="relative h-screen w-screen overflow-hidden bg-aura">
       <FadingVideo
         src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260418_080021_d598092b-c4c2-4e53-8e46-94cf9064cd50.mp4"
         className="absolute inset-0 w-full h-full object-cover z-0 scale-110"

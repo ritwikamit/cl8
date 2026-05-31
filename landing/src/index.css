@@ -56,6 +56,10 @@ html {
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
+  background-size: 100% 120%;
+  background-position: 0 0;
+  line-height: 1;
+  padding: 4px 0;
 }
 
 .bg-aura {
