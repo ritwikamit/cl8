@@ -18,15 +18,5 @@ export function renderLogo(columns: number): string {
   const pad = Math.max(0, Math.floor((columns - WIDTH) / 2));
   const prefix = ' '.repeat(pad);
 
-  const lines: string[] = [];
-  lines.push(prefix + chalk.dim('┌' + '─'.repeat(WIDTH - 2) + '┐'));
-
-  for (const line of LOGO_LINES) {
-    const trimmed = line.trimEnd();
-    const colored = trimmed ? GRADIENT(trimmed) : trimmed;
-    lines.push(prefix + chalk.dim('│') + ' ' + colored + ' ' + chalk.dim('│'));
-  }
-
-  lines.push(prefix + chalk.dim('└' + '─'.repeat(WIDTH - 2) + '┘'));
-  return lines.join('\n');
+  return LOGO_LINES.map(line => prefix + GRADIENT(line.trimEnd())).join('\n');
 }
