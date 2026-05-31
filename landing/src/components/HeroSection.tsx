@@ -1,29 +1,9 @@
 import { motion } from "framer-motion";
-import { useState } from "react";
 import FadingVideo from "./FadingVideo";
 
-function CopyFeedback({ copied }: { copied: boolean }) {
-  return copied ? (
-    <span className="text-xs text-white/40">copied</span>
-  ) : (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M7 17L17 7" />
-      <path d="M7 7h10v10" />
-    </svg>
-  );
-}
-
 export default function HeroSection() {
-  const [copied, setCopied] = useState(false);
-
-  const copyNpx = () => {
-    navigator.clipboard.writeText("npx @ritwikamit/cl8");
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
   return (
-    <section id="home" className="relative h-screen w-screen overflow-hidden bg-aura">
+    <section className="relative h-screen w-screen overflow-hidden bg-aura">
       <FadingVideo
         src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260418_080021_d598092b-c4c2-4e53-8e46-94cf9064cd50.mp4"
         className="absolute inset-0 w-full h-full object-cover z-0 scale-110"
@@ -31,51 +11,7 @@ export default function HeroSection() {
 
       <div className="absolute inset-0 z-[1] vignette" />
 
-      <div className="relative z-10 flex flex-col h-full">
-        {/* Nav */}
-        <nav className="fixed top-0 left-0 right-0 z-50 px-8 lg:px-16 h-20 flex items-center justify-between" style={{ background: "linear-gradient(180deg, rgba(0,0,0,0.4) 0%, transparent 100%)" }}>
-          <a href="#home" className="flex items-center gap-2.5 group">
-            <span className="flex flex-col gap-[3px] items-center">
-              <span className="w-[5px] h-[5px] rounded-full bg-[#00aaff]" />
-              <span className="w-[5px] h-[5px] rounded-full bg-[#9333ea]" />
-            </span>
-            <svg width="40" height="18" viewBox="0 0 40 18" className="inline-block">
-              <defs>
-                <linearGradient id="logoG" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0%" stopColor="#00aaff" />
-                  <stop offset="50%" stopColor="#9333ea" />
-                  <stop offset="100%" stopColor="#ff6bcb" />
-                </linearGradient>
-              </defs>
-              <text x="0" y="15" fontFamily="'Instrument Serif', Georgia, serif" fontStyle="italic" fontSize="16" fontWeight="500" fill="url(#logoG)">CL8</text>
-            </svg>
-          </a>
-
-          <div className="hidden md:flex items-center gap-8">
-            {["Features", "CLI", "About", "Blog"].map((l) => (
-              <a key={l} href={`#${l.toLowerCase()}`} className="text-sm text-white/50 hover:text-white/90 transition-colors font-body font-normal tracking-wide">
-                {l}
-              </a>
-            ))}
-            <button
-              onClick={copyNpx}
-              className="surface rounded-full px-5 py-2 text-sm text-white/80 flex items-center gap-2 cursor-pointer hover:text-white transition-colors"
-            >
-              <span className="font-body font-normal">npx @ritwikamit/cl8</span>
-              <CopyFeedback copied={copied} />
-            </button>
-          </div>
-
-          <button
-            onClick={copyNpx}
-            className="md:hidden surface rounded-full px-4 py-2 text-sm text-white/70 flex items-center gap-2 cursor-pointer"
-          >
-            <span className="text-xs">npx @ritwikamit/cl8</span>
-            <CopyFeedback copied={copied} />
-          </button>
-        </nav>
-
-        {/* Center */}
+      <div className="relative z-10 flex flex-col h-full pt-20">
         <div className="flex-1 flex flex-col items-center justify-center px-8">
           <div className="max-w-5xl text-center">
             <p className="overline mb-6">Terminal AI · v0.1.0</p>
@@ -90,7 +26,7 @@ export default function HeroSection() {
 
           <div className="flex items-center gap-5 mt-10">
             <button
-              onClick={copyNpx}
+              onClick={() => { navigator.clipboard.writeText("npx @ritwikamit/cl8"); }}
               className="surface rounded-full px-7 py-3 text-sm text-white flex items-center gap-3 cursor-pointer hover:bg-white/10 transition-all"
             >
               <span>Install CL8</span>
@@ -113,7 +49,6 @@ export default function HeroSection() {
           </div>
         </div>
 
-        {/* Bottom */}
         <div className="pb-8 flex items-center justify-center gap-12 text-sm text-white/30 font-body font-normal">
           <span>0.3s avg response</span>
           <span className="w-0.5 h-0.5 rounded-full bg-white/20" />

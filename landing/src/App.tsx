@@ -1,17 +1,20 @@
-import HeroSection from "./components/HeroSection";
-import CapabilitiesSection from "./components/CapabilitiesSection";
-import CliSection from "./components/CliSection";
-import AboutSection from "./components/AboutSection";
-import BlogSection from "./components/BlogSection";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import HomePage from "./pages/HomePage";
+import FeaturesPage from "./pages/FeaturesPage";
+import CliPage from "./pages/CliPage";
+import AboutPage from "./pages/AboutPage";
+import BlogPage from "./pages/BlogPage";
 
 export default function App() {
   return (
-    <>
-      <HeroSection />
-      <CapabilitiesSection />
-      <CliSection />
-      <AboutSection />
-      <BlogSection />
-    </>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/features" element={<FeaturesPage />} />
+        <Route path="/cli" element={<CliPage />} />
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/blog" element={<BlogPage />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
