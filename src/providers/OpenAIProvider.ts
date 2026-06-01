@@ -114,10 +114,26 @@ export class OpenAIProvider extends BaseProvider {
 
     for (const msg of messages) {
       if (msg.role === 'system') continue;
-      result.push({
-        role: msg.role as 'user' | 'assistant' | 'system',
-        content: msg.content,
-      });
+
+      if (msg.attachments && msg.attachments.length > 0 && msg.role === 'user') {
+        const parts: OpenAI.Chat.Completions.ChatCompletionContentPart[] = [
+          { type: 'text', text: msg.content },
+        ];
+        for (const att of msg.attachments) {
+          if (att.type === 'image') {
+            parts.push({
+              type: 'image_url',
+              image_url: { url: `data:${att.mimeType};base64,${att.data}` },
+            });
+          }
+        }
+        result.push({ role: 'user', content: parts });
+      } else {
+        result.push({
+          role: msg.role as 'user' | 'assistant' | 'system',
+          content: msg.content,
+        });
+      }
     }
 
     return result;

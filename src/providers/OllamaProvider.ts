@@ -11,6 +11,7 @@ import { AgentMessage } from '../types/agent.js';
 interface OllamaMessage {
   role: string;
   content: string;
+  images?: string[];
 }
 
 interface OllamaResponse {
@@ -45,7 +46,7 @@ export class OllamaProvider extends BaseProvider {
     return {
       streaming: true,
       toolCalling: false,
-      vision: false,
+      vision: true,
       maxContextTokens: DEFAULT_NUM_CTX,
     };
   }
@@ -165,10 +166,19 @@ export class OllamaProvider extends BaseProvider {
     }
 
     for (const msg of messages) {
-      result.push({
+      const m: OllamaMessage = {
         role: msg.role === 'assistant' ? 'assistant' : 'user',
         content: msg.content,
-      });
+      };
+      if (msg.attachments && msg.attachments.length > 0) {
+        const images = msg.attachments
+          .filter(a => a.type === 'image')
+          .map(a => a.data);
+        if (images.length > 0) {
+          m.images = images;
+        }
+      }
+      result.push(m);
     }
 
     return result;

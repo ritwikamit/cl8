@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI, GenerativeModel } from '@google/generative-ai';
+import { GoogleGenerativeAI, GenerativeModel, Part } from '@google/generative-ai';
 import { BaseProvider } from './BaseProvider.js';
 import {
   ProviderConfig,
@@ -32,7 +32,9 @@ export class GeminiProvider extends BaseProvider {
     const history = this.buildHistory(request.messages, request.systemPrompt);
     const chat = this.model.startChat({ history });
 
-    const result = await chat.sendMessage(request.messages[request.messages.length - 1]?.content || '');
+    const last = request.messages[request.messages.length - 1];
+    const parts = this.messageToParts(last);
+    const result = await chat.sendMessage(parts);
     const response = result.response;
 
     return {
@@ -48,7 +50,9 @@ export class GeminiProvider extends BaseProvider {
     const history = this.buildHistory(request.messages, request.systemPrompt);
     const chat = this.model.startChat({ history });
 
-    const result = await chat.sendMessageStream(request.messages[request.messages.length - 1]?.content || '');
+    const last = request.messages[request.messages.length - 1];
+    const parts = this.messageToParts(last);
+    const result = await chat.sendMessageStream(parts);
 
     for await (const chunk of result.stream) {
       const text = chunk.text();
@@ -71,8 +75,22 @@ export class GeminiProvider extends BaseProvider {
     }
   }
 
-  private buildHistory(messages: AgentMessage[], systemPrompt?: string): Array<{ role: string; parts: Array<{ text: string }> }> {
-    const history: Array<{ role: string; parts: Array<{ text: string }> }> = [];
+  private messageToParts(msg: AgentMessage): Part[] {
+    const parts: Part[] = [{ text: msg.content }];
+    if (msg.attachments) {
+      for (const att of msg.attachments) {
+        if (att.type === 'image') {
+          parts.push({
+            inlineData: { mimeType: att.mimeType, data: att.data },
+          });
+        }
+      }
+    }
+    return parts;
+  }
+
+  private buildHistory(messages: AgentMessage[], systemPrompt?: string): Array<{ role: string; parts: Part[] }> {
+    const history: Array<{ role: string; parts: Part[] }> = [];
 
     if (systemPrompt) {
       history.push({
@@ -89,7 +107,7 @@ export class GeminiProvider extends BaseProvider {
       const msg = messages[i];
       history.push({
         role: msg.role === 'assistant' ? 'model' : 'user',
-        parts: [{ text: msg.content }],
+        parts: this.messageToParts(msg),
       });
     }
 

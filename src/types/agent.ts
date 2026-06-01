@@ -2,12 +2,20 @@ export type AgentRole = 'user' | 'assistant' | 'system' | 'tool';
 
 export type AgentStatus = 'idle' | 'thinking' | 'planning' | 'executing' | 'reflecting' | 'responding' | 'error';
 
+export interface Attachment {
+  type: 'image' | 'file';
+  mimeType: string;
+  data: string;
+  name?: string;
+}
+
 export interface AgentMessage {
   id: string;
   role: AgentRole;
   content: string;
   timestamp: Date;
   metadata?: Record<string, unknown>;
+  attachments?: Attachment[];
 }
 
 export interface AgentThought {

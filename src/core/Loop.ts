@@ -1,11 +1,13 @@
 import readline from 'node:readline';
+import path from 'node:path';
 import chalk from 'chalk';
 import { Engine } from './Engine.js';
 import { SpinnerManager, SpinnerState } from '../ui/spinner-manager.js';
 import { markdown } from '../ui/MarkdownRenderer.js';
 import { ThemeManager } from '../ui/theme-manager.js';
 import { generateId } from '../utils/crypto.js';
-import { AgentMessage, AgentStatus } from '../types/agent.js';
+import { readFileAsAttachment } from '../utils/file.js';
+import { AgentMessage, AgentStatus, Attachment } from '../types/agent.js';
 import { getLogger } from '../utils/logger.js';
 
 const STATUS_MAP: Record<AgentStatus, SpinnerState> = {
@@ -30,6 +32,7 @@ const SLASH_COMMANDS: Record<string, { description: string; handler: (args: stri
   \`/session\`    - Show session details
   \`/tokens\`     - Show token usage
   \`/mode <ask|auto|deny>\` - Set approval mode
+  \`/upload <path>\` - Upload an image or text file
   \`/exit\`       - Exit CL8
 
 ## Tips
@@ -52,6 +55,10 @@ const SLASH_COMMANDS: Record<string, { description: string; handler: (args: stri
       return '## Session Status\n\nActive session running.';
     },
   },
+  '/upload': {
+    description: 'Upload a file (image or text) for the AI to see',
+    handler: async () => null,
+  },
   '/exit': {
     description: 'Exit CL8',
     handler: async () => {
@@ -71,6 +78,7 @@ export class InteractiveLoop {
   private running = true;
   private multiLineBuffer: string[] = [];
   private theme: ThemeManager;
+  private pendingAttachments: Attachment[] = [];
 
   constructor(engine: Engine, theme: ThemeManager, sessionId?: string) {
     this.engine = engine;
@@ -144,11 +152,26 @@ export class InteractiveLoop {
   }
 
   private async handleUserInput(input: string): Promise<void> {
+    let content = input;
+    const imageAttachments: Attachment[] = [];
+
+    for (const att of this.pendingAttachments) {
+      if (att.type === 'image') {
+        imageAttachments.push(att);
+      } else {
+        content = `[${att.name}]\n${att.data}\n\n${content}`;
+      }
+    }
+
+    const attachments = imageAttachments.length > 0 ? imageAttachments : undefined;
+    this.pendingAttachments = [];
+
     const userMessage: AgentMessage = {
       id: generateId(),
       role: 'user',
-      content: input,
+      content,
       timestamp: new Date(),
+      attachments,
     };
 
     await this.engine.addMessage(this.sessionId, userMessage);
@@ -222,6 +245,31 @@ export class InteractiveLoop {
       const session = this.engine.getSessionManager().getCurrentSession();
       if (session) {
         console.log(chalk.cyan(JSON.stringify(session, null, 2)) + '\n');
+      }
+      return;
+    }
+
+    if (cmd === '/upload') {
+      if (!args) {
+        console.log(chalk.yellow('Usage: /upload <filepath>\n'));
+        return;
+      }
+      try {
+        const attachment = await readFileAsAttachment(args);
+        this.pendingAttachments.push(attachment);
+        const size = attachment.type === 'image'
+          ? `${(Buffer.from(attachment.data, 'base64').length / 1024).toFixed(0)} KB`
+          : `${(attachment.data.length / 1024).toFixed(0)} KB`;
+        console.log(`  ${chalk.green('✓')} ${chalk.bold(attachment.name)} (${size})`);
+        if (attachment.type === 'image') {
+          console.log(chalk.dim('  Type your message to send it with the image.'));
+        } else {
+          console.log(chalk.dim('  File content will be included with your next message.'));
+        }
+        console.log();
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        console.log(`  ${chalk.red('✖')} ${message}\n`);
       }
       return;
     }
