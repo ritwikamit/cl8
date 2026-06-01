@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import StarsBackground from "./StarsBackground";
 
 const commands = [
-  { cmd: "npx cl8", desc: "Start CL8" },
+  { cmd: "npx @ritwikamit/cl8", desc: "Start CL8" },
   { cmd: "cl8 --model ollama", desc: "Use local Ollama" },
   { cmd: "cl8 --model openai", desc: "Use OpenAI" },
   { cmd: "cl8 --model gemini", desc: "Use Gemini" },
@@ -52,7 +52,7 @@ export default function CliSection() {
             <div className="surface-card rounded-2xl p-8">
               <p className="text-xs text-white/30 font-body font-medium mb-4">Terminal output</p>
               <code className="text-sm text-white/60 font-mono leading-loose block">
-                <span className="text-white/40">$</span> npx cl8<br />
+                <span className="text-white/40">$</span> npx @ritwikamit/cl8<br />
                 <span className="text-white/30">▸ Connected to Ollama (llama3.2)<br />
                 ▸ CL8 ready · 3 providers available<br /><br />
                 <span className="text-white/60">&gt;</span> Write a React hook for debounce</span>

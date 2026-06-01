@@ -47,7 +47,7 @@ ok "npm $(npm --version)"
 
 # --- Install ---
 step "Installing CL8 globally via npm..."
-npm install -g cl8 2>&1
+npm install -g @ritwikamit/cl8 2>&1
 ok "CL8 installed"
 
 # --- Verify ---
