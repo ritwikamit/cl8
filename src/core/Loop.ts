@@ -91,12 +91,23 @@ export class InteractiveLoop {
       prompt: '',
       terminal: true,
     });
+
+    process.on('SIGINT', () => {
+      this.spinner.stop();
+      console.log();
+    });
   }
 
   async start(): Promise<void> {
-    await this.engine.initialize();
-    this.showHelpHint();
-    await this.promptLoop();
+    try {
+      await this.engine.initialize();
+      this.showHelpHint();
+      await this.promptLoop();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      this.logger.error('Fatal error in CLI loop', { error: message });
+      console.log(chalk.red(`\n  ✖ Fatal error: ${message}\n`));
+    }
   }
 
   private showHelpHint(): void {
@@ -142,10 +153,6 @@ export class InteractiveLoop {
     return new Promise(resolve => {
       this.rl.question(`${branch('◆')} ${branch('cl8')}${chalk.dim(' > ')}`, (answer: string) => {
         resolve(answer);
-      });
-      this.rl.on('SIGINT', () => {
-        console.log('\n');
-        resolve(null);
       });
     });
   }
