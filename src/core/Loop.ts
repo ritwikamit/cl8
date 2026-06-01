@@ -93,8 +93,6 @@ export class InteractiveLoop {
   }
 
   private showHelpHint(): void {
-    const cols = process.stdout.columns || 80;
-    console.log(chalk.dim(`  ${'─'.repeat(Math.min(cols - 4, 36))}`));
     console.log(chalk.dim('  Type /help for commands · Ctrl+C to cancel · Ctrl+D to exit'));
     console.log();
   }
@@ -170,8 +168,6 @@ export class InteractiveLoop {
 
       this.spinner.stop();
 
-      const cols = process.stdout.columns || 80;
-      console.log(chalk.dim(`\n  ${'─'.repeat(Math.min(cols - 4, 36))}`));
       console.log();
 
       const assistantMessage: AgentMessage = {

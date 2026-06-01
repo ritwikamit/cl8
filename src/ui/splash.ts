@@ -20,22 +20,11 @@ export async function showSplash(
   console.log(renderLogo(columns));
   console.log();
 
-  console.log(chalk.dim(`  ${'─'.repeat(Math.min(columns - 4, 40))}`));
-  console.log();
-
-  for (const tip of TIPS) {
-    console.log(`  ${chalk.dim('▎')} ${chalk.dim(tip)}`);
-  }
-  console.log();
-
   const steps = ['Initializing', 'Loading Agents', 'Loading Memory'];
   for (const step of steps) {
     console.log(`  ${chalk.dim('▎')} ${chalk.dim(step)}…`);
   }
   console.log(`  ${c.accent('▎')} ${chalk.bold('Ready')}`);
-  console.log();
-
-  console.log(chalk.dim(`  ${'─'.repeat(Math.min(columns - 4, 40))}`));
   console.log();
 
   const statusData: StatusBarData = {
@@ -59,9 +48,6 @@ export async function showReducedSplash(
   console.log(renderLogo(columns));
   console.log();
   console.log(`  ${c.accent('▎')} ${chalk.bold('Ready')}\n`);
-
-  console.log(chalk.dim(`  ${'─'.repeat(Math.min(columns - 4, 40))}`));
-  console.log();
 
   const statusData: StatusBarData = {
     workspace: config.workspace.root,
