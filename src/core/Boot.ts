@@ -93,19 +93,6 @@ export class Boot {
     };
   }
 
-  promptRestoreSession(): Promise<boolean> {
-    return new Promise(resolve => {
-      const rl = readline.createInterface({
-        input: process.stdin,
-        output: process.stdout,
-      });
-      rl.question(chalk.dim(' Restore previous session? (Y/n) '), (answer: string) => {
-        rl.close();
-        resolve(answer.toLowerCase() !== 'n');
-      });
-    });
-  }
-
   private getModelName(config: CL8Config): string {
     switch (config.ai.defaultProvider) {
       case 'openai': return config.ai.openai?.model || 'gpt-4o';

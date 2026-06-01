@@ -122,6 +122,18 @@ export class InteractiveLoop {
     }
   }
 
+  async promptRestoreSession(): Promise<boolean> {
+    return new Promise(resolve => {
+      this.rl.question(chalk.dim(' Restore previous session? (Y/n) '), (answer: string) => {
+        resolve(answer.toLowerCase() !== 'n');
+      });
+    });
+  }
+
+  setSessionId(id: string): void {
+    this.sessionId = id;
+  }
+
   private showHelpHint(): void {
     console.log(chalk.dim('  Type /help for commands · Ctrl+C to cancel · Ctrl+D to exit'));
     console.log();

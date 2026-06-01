@@ -40,27 +40,26 @@ export async function chatCommand(options: {
   const boot = new Boot(bootOptions);
   const bootResult = await boot.startup(config);
 
-  const engine = new Engine(config);
-
   if (!bootOptions.noSplash) {
     bootResult.workspacePanel.display(config.workspace.root);
   }
 
   let sessionId: string | undefined = options.session;
+  const engine = new Engine(config);
+  const loop = new InteractiveLoop(engine, bootResult.theme, sessionId);
 
   if (!sessionId && !bootOptions.noSplash) {
     await engine.initialize();
     const sessions = engine.getSessionManager().listSessions(1);
     if (sessions.length > 0) {
-      const restore = await boot.promptRestoreSession();
+      const restore = await loop.promptRestoreSession();
       if (restore) {
         sessionId = sessions[0].id;
+        loop.setSessionId(sessionId);
         engine.getSessionManager().setCurrentSession(sessionId);
       }
     }
   }
-
-  const loop = new InteractiveLoop(engine, bootResult.theme, sessionId);
 
   await loop.start();
 }
