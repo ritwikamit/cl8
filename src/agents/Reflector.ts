@@ -79,22 +79,30 @@ export class Reflector {
     _results: Map<string, ExecutionResult>,
     _thought: AgentThought
   ): Promise<string> {
-    const stepsSummary = steps
-      .map(s => `- ${s.description}: ${s.status}${s.result ? `\n  Result: ${s.result.slice(0, 500)}` : ''}`)
-      .join('\n');
+    let prompt: string;
+
+    if (steps.length === 0) {
+      prompt = `The user has a request: "${userInput}"\n\nPlease provide a direct and helpful response. If it's a coding request, provide the complete code. No execution steps were performed because this was identified as a simple request.`;
+    } else {
+      const stepsSummary = steps
+        .map(s => `- ${s.description}: ${s.status}${s.result ? `\n  Result: ${s.result.slice(0, 500)}` : ''}`)
+        .join('\n');
+
+      prompt = `Original request: ${userInput}\n\nExecution summary:\n${stepsSummary}\n\nProvide a clear, helpful summary of what was done and the results. Include any code that was generated or modified.`;
+    }
 
     const messages: AgentMessage[] = [
       {
         id: generateId(),
         role: 'user' as const,
-        content: `Original request: ${userInput}\n\nExecution summary:\n${stepsSummary}\n\nProvide a clear, helpful summary of what was done and the results.`,
+        content: prompt,
         timestamp: new Date(),
       },
     ];
 
     const response = await this.provider.chat({
       messages,
-      maxTokens: 1024,
+      maxTokens: 2048,
       temperature: 0.5,
     });
     return response.content;

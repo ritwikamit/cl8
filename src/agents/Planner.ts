@@ -35,16 +35,18 @@ export class Planner {
 Available tools:
 ${toolsDesc}
 
-For each step, output EXACTLY ONE LINE in this format:
+For each step that requires a tool, output EXACTLY ONE LINE in this format:
 TOOL: <tool_name> | ACTION: <brief description> | INPUT: <json arguments for the tool>
 
+If a step does not require a tool (e.g., conceptual planning), just list it as a plain text line without the TOOL: prefix.
+
 Rules:
-- Use "file" tool for reading, writing, creating, editing files. Input: { "operation": "read"|"write"|"edit"|"delete"|"list", "path": "filepath", "content": "file content (for write)" }
-- Use "shell" tool for running commands. Input: { "command": "the command to run" }
-- Use "search" tool for searching code. Input: { "pattern": "search term", "path": "directory" }
-- Do NOT include markdown formatting, bullet points, or numbered lists
-- Each step must have valid JSON input matching the tool's input schema
-- Split complex tasks into small, single-action steps`;
+- Use "file" tool for reading, writing, creating, editing files.
+- Use "shell" tool for running commands.
+- Use "search" tool for searching code.
+- Each TOOL: line must have valid JSON input matching the tool's input schema.
+- Do NOT output TOOL: lines for internal reasoning or planning steps.
+- Split complex tasks into small, single-action steps.`;
 
     const messages = [
       ...context.slice(-10),
@@ -64,11 +66,12 @@ Rules:
     });
 
     const steps = this.parseSteps(response.content);
+    const plan = this.parsePlan(response.content);
 
     return {
       step: 0,
       reasoning: response.content,
-      plan: steps.map(s => s.description),
+      plan,
       steps,
     };
   }
@@ -96,12 +99,23 @@ Rules:
     });
 
     const revisedSteps = this.parseSteps(response.content);
+    const plan = this.parsePlan(response.content);
+
     return {
       step: 0,
       reasoning: response.content,
-      plan: revisedSteps.map(s => s.description),
+      plan,
       steps: revisedSteps,
     };
+  }
+
+  private parsePlan(content: string): string[] {
+    return content
+      .split('\n')
+      .map(line => line.trim())
+      .filter(line => line.length > 0)
+      .map(line => line.replace(/^TOOL:\s*\w+\s*\|\s*ACTION:\s*/i, ''))
+      .map(line => line.replace(/\s*\|\s*INPUT:.*$/i, ''));
   }
 
   private parseSteps(content: string): PlanStep[] {
@@ -139,6 +153,6 @@ Rules:
       });
     }
 
-    return steps.length > 0 ? steps : [{ id: generateId(), description: content.slice(0, 100), tool: 'shell', input: { command: content }, status: 'pending' }];
+    return steps;
   }
 }

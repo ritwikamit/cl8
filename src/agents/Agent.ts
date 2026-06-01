@@ -102,7 +102,7 @@ export class Agent {
       this.state.status = 'responding';
       const response = await this.reflector.generateResponse(input, [], new Map(), {
         step: 0,
-        reasoning: '',
+        reasoning: 'Direct response for simple query.',
         plan: [],
       });
       yield response;
@@ -121,11 +121,23 @@ export class Agent {
 
     let thought: AgentThought = await this.planner.createPlan(input, this.state.messages);
     this.state.thoughts.push(thought);
-    yield `**Plan:**\n${(thought.plan || []).map((s, i) => `${i + 1}. ${s}`).join('\n')}\n\n`;
+    
+    if (thought.plan && thought.plan.length > 0) {
+      yield `**Plan:**\n${thought.plan.map((s, i) => `${i + 1}. ${s}`).join('\n')}\n\n`;
+    }
 
     this.state.status = 'executing';
     const steps: PlanStep[] = this.parsePlanSteps(thought);
     const results = new Map<string, ExecutionResult>();
+
+    if (steps.length === 0) {
+      this.state.status = 'responding';
+      const response = await this.reflector.generateResponse(input, [], new Map(), thought);
+      yield response;
+      yield '\n\n';
+      this.state.status = 'idle';
+      return;
+    }
 
     for (const step of steps) {
       yield `**Executing:** ${step.description}\n\n`;
@@ -169,7 +181,9 @@ export class Agent {
         );
         this.state.thoughts.push(thought);
 
-        yield `**Revised Plan:**\n${(thought.plan || []).map((s, i) => `${i + 1}. ${s}`).join('\n')}\n\n`;
+        if (thought.plan && thought.plan.length > 0) {
+          yield `**Revised Plan:**\n${thought.plan.map((s, i) => `${i + 1}. ${s}`).join('\n')}\n\n`;
+        }
 
         const newSteps = this.parsePlanSteps(thought);
         for (const step of newSteps) {
@@ -194,17 +208,38 @@ export class Agent {
 
   private isSimpleQuery(input: string): boolean {
     const trimmed = input.trim().toLowerCase();
+    
+    // Basic greetings and courtesies
     const greetings = ['hi', 'hello', 'hey', 'yo', 'sup', 'howdy', 'greetings', 'good morning', 'good afternoon', 'good evening'];
     if (greetings.includes(trimmed)) return true;
+
     const simplePatterns = [
       /^(hi|hello|hey|yo|sup|howdy)(!|\.)?$/i,
       /^(what'?s up|how are you|how'?s it going|what can you do|who are you|what are you|tell me about yourself)(\?)?$/i,
       /^(thanks|thank you|thx|ty|ok|okay|sure|great|nice|good|awesome|cool|got it)(!|\.)?$/i,
       /^(bye|goodbye|see you|later|cya)(!|\.)?$/i,
     ];
-    for (const p of simplePatterns) {
+
+    // Detect simple coding requests that don't need complex planning or tool execution
+    const codingPatterns = [
+      /print.*(pyramid|pattern|loop|array|string)/i,
+      /how to.*(loop|if|else|switch|function|class)/i,
+      /write.*(java|python|javascript|js|ts|c\+\+|cpp|c#).*program.*to/i,
+      /example of.*(sort|filter|map|reduce|recursion)/i,
+      /explain.*(bubble sort|binary search|linked list|stack|queue)/i,
+      /^(fibonacci|factorial|prime number|palindrome)/i
+    ];
+
+    const allPatterns = [...simplePatterns, ...codingPatterns];
+    for (const p of allPatterns) {
       if (p.test(trimmed)) return true;
     }
+
+    // Length-based heuristic: very short inputs are likely simple queries
+    if (trimmed.split(/\s+/).length <= 3 && !trimmed.includes('/') && !trimmed.includes('\\')) {
+      return true;
+    }
+
     return false;
   }
 
@@ -212,13 +247,8 @@ export class Agent {
     if (thought.steps && thought.steps.length > 0) {
       return thought.steps.map(s => ({ ...s, status: 'pending' as const }));
     }
-    return (thought.plan || []).map(description => ({
-      id: generateId(),
-      description,
-      tool: 'shell',
-      input: { command: description },
-      status: 'pending' as const,
-    }));
+    // REMOVED: Dangerous fallback that treated plan text as shell commands
+    return [];
   }
 
   private canAutoExecute(step: PlanStep): boolean {
