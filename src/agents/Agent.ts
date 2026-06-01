@@ -220,7 +220,13 @@ export class Agent {
       /^(bye|goodbye|see you|later|cya)(!|\.)?$/i,
     ];
 
-    // Detect simple coding requests that don't need complex planning or tool execution
+    // Detect simple coding requests that don't need complex planning or tool execution.
+    // We avoid triggering this if the user asks to "run", "install", "create", "save", or "fix".
+    const actionKeywords = ['run', 'install', 'create', 'save', 'fix', 'execute', 'apply', 'setup', 'build', 'deploy', 'search'];
+    const hasActionKeyword = actionKeywords.some(kw => trimmed.includes(kw));
+
+    if (hasActionKeyword) return false;
+
     const codingPatterns = [
       /print.*(pyramid|pattern|loop|array|string)/i,
       /how to.*(loop|if|else|switch|function|class)/i,

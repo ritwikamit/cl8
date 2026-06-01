@@ -95,8 +95,10 @@ export class InteractiveLoop {
     this.rl.on('SIGINT', () => {
       this.spinner.stop();
       console.log();
-      // Don't exit, just clear current line and show prompt
-      this.rl.prompt();
+      // On SIGINT, we just want to clear the line and show a new prompt if we are idle
+      if (!this.spinner.reducedMotion) {
+        process.stdout.write('\n');
+      }
     });
 
     this.rl.on('close', () => {
@@ -130,7 +132,7 @@ export class InteractiveLoop {
       try {
         const input = await this.getInput();
 
-        if (input === null) {
+        if (input === null || input === undefined) {
           this.running = false;
           break;
         }
@@ -157,22 +159,30 @@ export class InteractiveLoop {
         }
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
-        this.logger.error('Loop error, restarting prompt', { error: message });
+        this.logger.error('Loop error', { error: message });
         console.log(chalk.yellow(`\n  ⚠ Loop error: ${message}\n`));
       }
+    }
+
+    if (this.running) {
+      this.running = false;
+      this.cleanup();
     }
   }
 
   private getInput(): Promise<string | null> {
     return new Promise(resolve => {
       const prompt = `${branch('◆')} ${branch('cl8')}${chalk.dim(' > ')}`;
-      this.rl.question(prompt, (answer: string) => {
-        resolve(answer);
-      });
       
-      // Handle Ctrl+D (EOF) which closes the interface
-      this.rl.once('close', () => {
+      const onInterfaceClose = () => {
         resolve(null);
+      };
+
+      this.rl.once('close', onInterfaceClose);
+
+      this.rl.question(prompt, (answer: string) => {
+        this.rl.removeListener('close', onInterfaceClose);
+        resolve(answer);
       });
     });
   }
