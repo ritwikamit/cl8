@@ -1,4 +1,5 @@
 import { GoogleGenerativeAI, GenerativeModel, Part } from '@google/generative-ai';
+import crypto from 'node:crypto';
 import { BaseProvider } from './BaseProvider.js';
 import {
   ProviderConfig,

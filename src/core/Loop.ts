@@ -217,17 +217,29 @@ export class InteractiveLoop {
       this.spinner.start('thinking');
 
       let responseContent = '';
+      let hasStoppedSpinner = false;
 
       for await (const chunk of stream) {
         const status = this.engine.getAgent().getState().status;
-        this.spinner.update(STATUS_MAP[status] || 'thinking');
+        
+        // STOP the spinner once we start responding so it doesn't overwrite the text
+        if (status === 'responding' && !hasStoppedSpinner) {
+          this.spinner.stop();
+          hasStoppedSpinner = true;
+        } else if (!hasStoppedSpinner) {
+          this.spinner.update(STATUS_MAP[status] || 'thinking');
+        }
+
         process.stdout.write(chunk);
         responseContent += chunk;
       }
 
       this.spinner.stop();
 
-      console.log();
+      // Ensure we start a new line after the streamed response
+      if (responseContent) {
+        process.stdout.write('\n\n');
+      }
 
       const assistantMessage: AgentMessage = {
         id: generateId(),
