@@ -44,8 +44,8 @@ export class Boot {
     this.options = options;
   }
 
-  async startup(): Promise<BootResult> {
-    const config = loadConfig();
+  async startup(overrideConfig?: CL8Config): Promise<BootResult> {
+    const config = overrideConfig || loadConfig();
 
     if (this.options.resetOnboarding) {
       updateConfig({ onboardingComplete: false });

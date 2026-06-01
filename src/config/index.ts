@@ -28,7 +28,7 @@ const DEFAULT_CONFIG: CL8Config = {
     sandboxEnabled: true,
   },
   workspace: {
-    root: path.resolve(process.cwd(), 'workspace'),
+    root: process.cwd(),
     allowedPaths: [process.cwd()],
     blockedPatterns: ['node_modules', '.git', 'dist', '.next', 'build'],
   },
@@ -91,7 +91,11 @@ export function loadConfig(): CL8Config {
 
   config.ai.defaultProvider = (getEnv('CL8_DEFAULT_PROVIDER') || config.ai.defaultProvider) as ProviderType;
 
-  config.workspace.root = getEnv('CL8_WORKSPACE') || config.workspace.root;
+  // Prioritize environment variable, then default to current working directory.
+  // This prevents the workspace from becoming "sticky" in the global config store
+  // and allows it to follow the user as they change directories.
+  config.workspace.root = getEnv('CL8_WORKSPACE') || process.cwd();
+  
   config.security.approvalMode = (getEnv('CL8_APPROVAL_MODE') || config.security.approvalMode) as ApprovalMode;
   config.logging.level = (getEnv('CL8_LOG_LEVEL') || config.logging.level) as LogLevel;
   config.plugins.directories = getEnvList('CL8_PLUGIN_DIRS') || config.plugins.directories;

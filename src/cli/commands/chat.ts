@@ -38,7 +38,7 @@ export async function chatCommand(options: {
   };
 
   const boot = new Boot(bootOptions);
-  const bootResult = await boot.startup();
+  const bootResult = await boot.startup(config);
 
   const engine = new Engine(config);
 
