@@ -22,6 +22,7 @@ export interface AgentThought {
   step: number;
   reasoning: string;
   plan?: string[];
+  steps?: PlanStep[];
   action?: string;
   observation?: string;
 }

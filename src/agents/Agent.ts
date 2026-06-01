@@ -209,35 +209,20 @@ export class Agent {
   }
 
   private parsePlanSteps(thought: AgentThought): PlanStep[] {
+    if (thought.steps && thought.steps.length > 0) {
+      return thought.steps.map(s => ({ ...s, status: 'pending' as const }));
+    }
     return (thought.plan || []).map(description => ({
       id: generateId(),
       description,
-      tool: this.inferTool(description),
-      input: {},
-      status: 'pending',
+      tool: 'shell',
+      input: { command: description },
+      status: 'pending' as const,
     }));
   }
 
-  private inferTool(description: string): string {
-    const lower = description.toLowerCase();
-    if (lower.includes('read') || lower.includes('open') || lower.includes('cat ')) return 'file';
-    if (lower.includes('run') || lower.includes('exec') || lower.includes('install') || lower.includes('npm') || lower.includes('git')) return 'shell';
-    if (lower.includes('search') || lower.includes('find') || lower.includes('grep') || lower.includes('look')) return 'search';
-    if (lower.includes('write') || lower.includes('create') || lower.includes('edit') || lower.includes('save')) return 'file';
-    return 'file';
-  }
-
   private canAutoExecute(step: PlanStep): boolean {
-    const actionableKeywords = ['read', 'write', 'edit', 'run', 'exec', 'search', 'find', 'grep', 'create', 'delete', 'install', 'list', 'cat'];
-    const lower = step.description.toLowerCase();
-    if (!actionableKeywords.some(k => lower.includes(k))) {
-      return false;
-    }
-    const analysisPatterns = ['understand what', 'identify which', 'break into', 'specify', 'consider', 'analyze'];
-    if (analysisPatterns.some(p => lower.includes(p))) {
-      return false;
-    }
-    return true;
+    return step.tool === 'shell' || step.tool === 'file' || step.tool === 'search';
   }
 
   getState(): AgentState {
