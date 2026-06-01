@@ -100,12 +100,11 @@ export class Agent {
   ): AsyncGenerator<string> {
     if (this.isSimpleQuery(input)) {
       this.state.status = 'responding';
-      const response = await this.reflector.generateResponse(input, [], new Map(), {
+      yield* this.reflector.generateResponseStream(input, [], new Map(), {
         step: 0,
         reasoning: 'Direct response for simple query.',
         plan: [],
       });
-      yield response;
       yield '\n\n';
       this.state.status = 'idle';
       return;
@@ -132,8 +131,7 @@ export class Agent {
 
     if (steps.length === 0) {
       this.state.status = 'responding';
-      const response = await this.reflector.generateResponse(input, [], new Map(), thought);
-      yield response;
+      yield* this.reflector.generateResponseStream(input, [], new Map(), thought);
       yield '\n\n';
       this.state.status = 'idle';
       return;
@@ -199,8 +197,7 @@ export class Agent {
 
     this.state.status = 'responding';
 
-    const response = await this.reflector.generateResponse(input, steps, results, thought);
-    yield response;
+    yield* this.reflector.generateResponseStream(input, steps, results, thought);
     yield '\n\n';
 
     this.state.status = 'idle';

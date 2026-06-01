@@ -73,12 +73,12 @@ export class Reflector {
     };
   }
 
-  async generateResponse(
+  async *generateResponseStream(
     userInput: string,
     steps: PlanStep[],
     _results: Map<string, ExecutionResult>,
     _thought: AgentThought
-  ): Promise<string> {
+  ): AsyncIterable<string> {
     let prompt: string;
 
     if (steps.length === 0) {
@@ -100,12 +100,15 @@ export class Reflector {
       },
     ];
 
-    const response = await this.provider.chat({
+    const stream = this.provider.chatStream({
       messages,
       maxTokens: 2048,
       temperature: 0.5,
     });
-    return response.content;
+
+    for await (const chunk of stream) {
+      yield chunk.content;
+    }
   }
 
   private extractSuggestions(feedback: string): string[] {

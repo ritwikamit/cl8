@@ -5,10 +5,6 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createLogger } from '../utils/logger.js';
 import { loadConfig } from '../config/index.js';
-import { chatCommand } from './commands/chat.js';
-import { initCommand } from './commands/init.js';
-import { sessionCommand } from './commands/session.js';
-import { configCommand } from './commands/config.js';
 import { renderLogo } from '../ui/pixel-logo.js';
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
@@ -48,6 +44,7 @@ export function createCLI(): Command {
     .option('--reset-onboarding', 'Reset first-launch onboarding')
     .option('--theme <mode>', 'Color theme (dark, light, auto)')
     .action(async (options) => {
+      const { chatCommand } = await import('./commands/chat.js');
       await chatCommand(options);
     });
 
@@ -55,6 +52,7 @@ export function createCLI(): Command {
     .command('init')
     .description('Initialize CL8 configuration')
     .action(async () => {
+      const { initCommand } = await import('./commands/init.js');
       await initCommand();
     });
 
@@ -65,6 +63,7 @@ export function createCLI(): Command {
     .option('-s, --show <id>', 'Show session details')
     .option('-r, --resume <id>', 'Resume a session')
     .action(async (options) => {
+      const { sessionCommand } = await import('./commands/session.js');
       await sessionCommand(options);
     });
 
@@ -77,6 +76,7 @@ export function createCLI(): Command {
     .option('--reset', 'Reset to defaults')
     .option('--path', 'Show config file path')
     .action(async (options) => {
+      const { configCommand } = await import('./commands/config.js');
       await configCommand(options);
     });
 
