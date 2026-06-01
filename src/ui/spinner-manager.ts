@@ -58,6 +58,7 @@ export class SpinnerManager {
       text: `${chalk.bold(config.icon)} ${config.text}...`,
       spinner: config.style,
       color: config.color,
+      discardStdin: false,
     }).start();
   }
 
