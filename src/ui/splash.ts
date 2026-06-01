@@ -9,32 +9,33 @@ const TIPS = [
   'Use /help for available commands.',
 ];
 
-function delay(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
-
 export async function showSplash(
   theme: ThemeManager,
   config: { ai: { defaultProvider: string }; workspace: { root: string } }
 ): Promise<void> {
   const columns = process.stdout.columns || 100;
+  const c = theme.chalkColors;
 
   console.log();
   console.log(renderLogo(columns));
   console.log();
-  console.log(`  ${chalk.dim('Tips:')}`);
-  for (let i = 0; i < TIPS.length; i++) {
-    await delay(80);
-    console.log(`   ${chalk.dim(`${i + 1}.`)} ${chalk.dim(TIPS[i])}`);
+
+  console.log(chalk.dim(`  ${'─'.repeat(Math.min(columns - 4, 40))}`));
+  console.log();
+
+  for (const tip of TIPS) {
+    console.log(`  ${chalk.dim('▎')} ${chalk.dim(tip)}`);
   }
   console.log();
 
   const steps = ['Initializing', 'Loading Agents', 'Loading Memory'];
   for (const step of steps) {
-    process.stdout.write(`  ● ${chalk.dim(step)}…\n`);
-    await delay(300);
+    console.log(`  ${chalk.dim('▎')} ${chalk.dim(step)}…`);
   }
-  process.stdout.write(`  ● ${chalk.green('Ready')}\n`);
+  console.log(`  ${c.accent('▎')} ${chalk.bold('Ready')}`);
+  console.log();
+
+  console.log(chalk.dim(`  ${'─'.repeat(Math.min(columns - 4, 40))}`));
   console.log();
 
   const statusData: StatusBarData = {
@@ -51,10 +52,16 @@ export async function showReducedSplash(
   theme: ThemeManager,
   config: { ai: { defaultProvider: string }; workspace: { root: string } }
 ): Promise<void> {
+  const c = theme.chalkColors;
+  const columns = process.stdout.columns || 100;
+
   console.log();
-  console.log(renderLogo(process.stdout.columns || 100));
+  console.log(renderLogo(columns));
   console.log();
-  console.log(`  ${chalk.green('●')} Ready\n`);
+  console.log(`  ${c.accent('▎')} ${chalk.bold('Ready')}\n`);
+
+  console.log(chalk.dim(`  ${'─'.repeat(Math.min(columns - 4, 40))}`));
+  console.log();
 
   const statusData: StatusBarData = {
     workspace: config.workspace.root,

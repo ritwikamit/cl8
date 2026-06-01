@@ -2,7 +2,6 @@ import readline from 'node:readline';
 import chalk from 'chalk';
 import { Engine } from './Engine.js';
 import { SpinnerManager, SpinnerState } from '../ui/spinner-manager.js';
-import { StreamingOutput } from '../ui/StreamingOutput.js';
 import { markdown } from '../ui/MarkdownRenderer.js';
 import { ThemeManager } from '../ui/theme-manager.js';
 import { generateId } from '../utils/crypto.js';
@@ -61,11 +60,12 @@ const SLASH_COMMANDS: Record<string, { description: string; handler: (args: stri
   },
 };
 
+const branch = chalk.hex('#A855F7');
+
 export class InteractiveLoop {
   private engine: Engine;
   private sessionId: string;
   private spinner: SpinnerManager;
-  private output: StreamingOutput;
   private rl: readline.Interface;
   private logger = getLogger();
   private running = true;
@@ -77,7 +77,6 @@ export class InteractiveLoop {
     this.theme = theme;
     this.sessionId = sessionId || generateId();
     this.spinner = new SpinnerManager();
-    this.output = new StreamingOutput();
 
     this.rl = readline.createInterface({
       input: process.stdin,
@@ -94,6 +93,8 @@ export class InteractiveLoop {
   }
 
   private showHelpHint(): void {
+    const cols = process.stdout.columns || 80;
+    console.log(chalk.dim(`  ${'─'.repeat(Math.min(cols - 4, 36))}`));
     console.log(chalk.dim('  Type /help for commands · Ctrl+C to cancel · Ctrl+D to exit'));
     console.log();
   }
@@ -134,7 +135,7 @@ export class InteractiveLoop {
 
   private getInput(): Promise<string | null> {
     return new Promise(resolve => {
-      this.rl.question(`${chalk.hex('#6C5CE7')('cl8')}${chalk.dim(' > ')}`, (answer: string) => {
+      this.rl.question(`${branch('◆')} ${branch('cl8')}${chalk.dim(' > ')}`, (answer: string) => {
         resolve(answer);
       });
       this.rl.on('SIGINT', () => {
@@ -157,19 +158,22 @@ export class InteractiveLoop {
     try {
       const stream = await this.engine.processUserInput(input, this.sessionId);
       this.spinner.start('thinking');
-      this.output.start();
+
+      let responseContent = '';
 
       for await (const chunk of stream) {
-        this.spinner.stop();
-        this.output.append(chunk);
         const status = this.engine.getAgent().getState().status;
-        this.spinner.start(STATUS_MAP[status] || 'thinking');
+        this.spinner.update(STATUS_MAP[status] || 'thinking');
+        process.stdout.write(chunk);
+        responseContent += chunk;
       }
 
-      this.spinner.succeed();
-      this.output.stop();
+      this.spinner.stop();
 
-      const responseContent = this.output.getContent();
+      const cols = process.stdout.columns || 80;
+      console.log(chalk.dim(`\n  ${'─'.repeat(Math.min(cols - 4, 36))}`));
+      console.log();
+
       const assistantMessage: AgentMessage = {
         id: generateId(),
         role: 'assistant',
@@ -197,7 +201,6 @@ export class InteractiveLoop {
     }
 
     if (cmd === '/clear') {
-      this.output.clear();
       console.clear();
       return;
     }

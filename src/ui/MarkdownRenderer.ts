@@ -72,7 +72,7 @@ export class MarkdownRenderer {
       case 'codespan':
         return chalk.bgBlack.cyan((token as Tokens.Codespan).text);
       case 'hr':
-        return chalk.gray('─'.repeat(Math.min(this.terminalWidth, 60))) + '\n';
+        return chalk.dim('  ' + '─'.repeat(Math.min(this.terminalWidth - 4, 40))) + '\n\n';
       case 'blockquote':
         return this.renderBlockquote(token as Tokens.Blockquote);
       case 'space':
@@ -92,13 +92,13 @@ export class MarkdownRenderer {
 
     switch (token.depth) {
       case 1:
-        return chalk.bold.hex('#FF6B6B')(`\n${prefix}${text}\n`) + chalk.gray('━'.repeat(Math.min(this.terminalWidth, 50))) + '\n';
+        return `\n${chalk.bold.hex('#A855F7')(`${text}`)}\n${chalk.dim('  ' + '─'.repeat(Math.min(this.terminalWidth - 4, 40)))}\n`;
       case 2:
-        return chalk.bold.hex('#4ECDC4')(`\n${prefix}${text}\n`);
+        return `\n${chalk.bold.hex('#818CF8')(`${prefix}${text}`)}\n`;
       case 3:
-        return chalk.bold.hex('#45B7D1')(`\n${prefix}${text}\n`);
+        return `\n${chalk.hex('#6B7280')(`${prefix}${text}`)}\n`;
       default:
-        return chalk.bold(`\n${prefix}${text}\n`);
+        return `\n${chalk.bold(`${prefix}${text}`)}\n`;
     }
   }
 
@@ -122,14 +122,14 @@ export class MarkdownRenderer {
   private renderCode(token: Tokens.Code): string {
     const lang = token.lang || '';
     const colorizer = LANGUAGE_COLORS[lang] || chalk.white;
-    const header = lang ? chalk.dim(`┌─ ${lang} ───────────────────────────────`) : chalk.dim('┌─────────────────────────────────────────');
+    const langTag = lang ? chalk.dim(`  ${lang}`) : '';
 
     const lines = token.text.split('\n');
     const code = lines
-      .map(line => chalk.bgBlack(colorizer(line)))
+      .map(line => `  ${chalk.dim('▎')} ${colorizer(line)}`)
       .join('\n');
 
-    return `${header}\n${code}\n${chalk.dim('└─────────────────────────────────────────')}\n\n`;
+    return `${langTag}\n${code}\n\n`;
   }
 
   private renderList(token: Tokens.List): string {
@@ -142,13 +142,13 @@ export class MarkdownRenderer {
 
   private renderListItem(token: Tokens.ListItem): string {
     const text = token.text || this.renderInlineContent(token.tokens || []);
-    const prefix = token.task ? (token.checked ? '☑ ' : '☐ ') : '• ';
-    return `  ${prefix}${text}\n`;
+    const prefix = token.task ? (token.checked ? '[x]' : '[ ]') : '•';
+    return `  ${chalk.dim(prefix)} ${text}\n`;
   }
 
   private renderBlockquote(token: Tokens.Blockquote): string {
     const text = this.renderInlineContent(token.tokens || []);
-    return chalk.gray(`│ ${text.replace(/\n/g, '\n│ ')}\n\n`);
+    return chalk.dim(`  ▎ ${text.replace(/\n/g, '\n  ▎ ')}\n\n`);
   }
 }
 
