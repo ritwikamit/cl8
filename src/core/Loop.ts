@@ -92,16 +92,17 @@ export class InteractiveLoop {
       terminal: true,
     });
 
-    process.on('SIGINT', () => {
+    this.rl.on('SIGINT', () => {
       this.spinner.stop();
       console.log();
+      // Don't exit, just clear current line and show prompt
+      this.rl.prompt();
     });
 
-    process.stdin.on('close', () => {
+    this.rl.on('close', () => {
       if (this.running) {
-        setTimeout(() => {
-          process.stdin.resume();
-        }, 10);
+        this.running = false;
+        this.cleanup();
       }
     });
   }
@@ -115,6 +116,7 @@ export class InteractiveLoop {
       const message = err instanceof Error ? err.message : String(err);
       this.logger.error('Fatal error in CLI loop', { error: message });
       console.log(chalk.red(`\n  ✖ Fatal error: ${message}\n`));
+      process.exit(1);
     }
   }
 
@@ -156,25 +158,21 @@ export class InteractiveLoop {
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
         this.logger.error('Loop error, restarting prompt', { error: message });
-        this.rl.close();
-        this.rl = readline.createInterface({
-          input: process.stdin,
-          output: process.stdout,
-          prompt: '',
-          terminal: true,
-        });
-        console.log(chalk.dim(`  ${'─'.repeat(Math.min((process.stdout.columns || 80) - 4, 30))}`));
-        console.log();
+        console.log(chalk.yellow(`\n  ⚠ Loop error: ${message}\n`));
       }
     }
-
-    this.cleanup();
   }
 
   private getInput(): Promise<string | null> {
     return new Promise(resolve => {
-      this.rl.question(`${branch('◆')} ${branch('cl8')}${chalk.dim(' > ')}`, (answer: string) => {
+      const prompt = `${branch('◆')} ${branch('cl8')}${chalk.dim(' > ')}`;
+      this.rl.question(prompt, (answer: string) => {
         resolve(answer);
+      });
+      
+      // Handle Ctrl+D (EOF) which closes the interface
+      this.rl.once('close', () => {
+        resolve(null);
       });
     });
   }
