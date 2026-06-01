@@ -9,8 +9,8 @@
 ---
 
 [![CI](https://github.com/ritwikamit/cl8/actions/workflows/ci.yml/badge.svg)](https://github.com/ritwikamit/cl8/actions/workflows/ci.yml)
-[![npm version](https://img.shields.io/npm/v/@ritwikamit/cl8.svg?color=4ECDC4)](https://www.npmjs.com/package/@ritwikamit/cl8)
-[![npm downloads](https://img.shields.io/npm/dm/@ritwikamit/cl8.svg?color=45B7D1)](https://www.npmjs.com/package/@ritwikamit/cl8)
+[![npm version](https://img.shields.io/npm/v/cl8.svg?color=4ECDC4)](https://www.npmjs.com/package/cl8)
+[![npm downloads](https://img.shields.io/npm/dm/cl8.svg?color=45B7D1)](https://www.npmjs.com/package/cl8)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/%3C%2F%3E-TypeScript-3178C6)](https://www.typescriptlang.org/)
 [![Node](https://img.shields.io/badge/Node-%3E%3D18-339933)](https://nodejs.org/)
@@ -287,10 +287,10 @@ cl8/
 **Windows (PowerShell)**:
 ```powershell
 # Option A: Run instantly with npx (no install needed)
-npx @ritwikamit/cl8
+npx cl8
 
 # Option B: Install globally
-npm install -g @ritwikamit/cl8
+npm install -g cl8
 cl8
 
 # Option C: Automated installer
@@ -300,10 +300,10 @@ irm https://raw.githubusercontent.com/ritwikamit/cl8/main/scripts/install.ps1 | 
 **macOS / Linux**:
 ```bash
 # Option A: Run instantly with npx (no install needed)
-npx @ritwikamit/cl8
+npx cl8
 
 # Option B: Install globally
-npm install -g @ritwikamit/cl8
+npm install -g cl8
 cl8
 
 # Option C: Automated installer

@@ -47,7 +47,7 @@ Write-OK "npm $($npm.Source)"
 
 # --- Install ---
 Write-Step "Installing CL8 globally via npm..."
-npm install -g @ritwikamit/cl8 2>&1 | Out-Null
+npm install -g cl8 2>&1 | Out-Null
 if ($LASTEXITCODE -ne 0) {
   Write-Err "npm install failed. Check your network connection."
   exit 1

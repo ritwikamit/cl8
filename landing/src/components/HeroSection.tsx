@@ -26,7 +26,7 @@ export default function HeroSection() {
 
           <div className="flex items-center gap-5 mt-10">
             <button
-              onClick={() => { navigator.clipboard.writeText("npx @ritwikamit/cl8"); }}
+              onClick={() => { navigator.clipboard.writeText("npx cl8"); }}
               className="surface rounded-full px-7 py-3 text-sm text-white flex items-center gap-3 cursor-pointer hover:bg-white/10 transition-all"
             >
               <span>Install CL8</span>

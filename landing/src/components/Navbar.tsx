@@ -25,7 +25,7 @@ export default function Navbar() {
   const { pathname } = useLocation();
 
   const copyNpx = () => {
-    navigator.clipboard.writeText("npx @ritwikamit/cl8");
+    navigator.clipboard.writeText("npx cl8");
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -88,7 +88,7 @@ export default function Navbar() {
           onClick={copyNpx}
           className="surface rounded-full px-5 py-2 text-sm text-white/80 flex items-center gap-2 cursor-pointer hover:text-white transition-colors"
         >
-          <span className="font-body font-normal">npx @ritwikamit/cl8</span>
+          <span className="font-body font-normal">npx cl8</span>
           <CopyFeedback copied={copied} />
         </button>
       </div>
@@ -97,7 +97,7 @@ export default function Navbar() {
         onClick={copyNpx}
         className="md:hidden surface rounded-full px-4 py-2 text-sm text-white/70 flex items-center gap-2 cursor-pointer"
       >
-        <span className="text-xs">npx @ritwikamit/cl8</span>
+        <span className="text-xs">npx cl8</span>
         <CopyFeedback copied={copied} />
       </button>
     </nav>
