@@ -2,8 +2,7 @@ import Conf from 'conf';
 import path from 'node:path';
 import { CL8Config, ApprovalMode, LogLevel } from '../types/config.js';
 import { ProviderType } from '../types/provider.js';
-import { getEnv, getEnvList, getEnvBool, getEnvInt, loadEnv } from './env.js';
-import { getLogger } from '../utils/logger.js';
+import { getEnv, getEnvList, loadEnv } from './env.js';
 
 const DEFAULT_CONFIG: CL8Config = {
   ai: {

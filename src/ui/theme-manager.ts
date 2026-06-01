@@ -14,7 +14,6 @@ export class ThemeManager {
 
   private detectTerminal(): void {
     const term = process.env.TERM_PROGRAM || '';
-    const shell = process.env.SHELL || '';
     const os = process.platform;
 
     if (term.includes('vscode')) this.terminalType = 'linux';

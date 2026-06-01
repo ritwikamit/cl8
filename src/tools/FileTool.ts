@@ -120,7 +120,7 @@ export class FileTool extends BaseTool {
     return { success: true, stdout: `Deleted ${filePath}` };
   }
 
-  private async listFiles(dirPath: string, pattern?: string): Promise<ToolOutput> {
+  private async listFiles(dirPath: string, _pattern?: string): Promise<ToolOutput> {
     const entries = await fs.readdir(dirPath, { withFileTypes: true });
     const files = entries.map(e => ({
       name: e.name,

@@ -2,7 +2,7 @@ import { BaseTool } from '../tools/BaseTool.js';
 import { getBuiltInTools, findTool } from '../tools/index.js';
 import { SecurityService } from './SecurityService.js';
 import { AuditService } from './AuditService.js';
-import { ToolInput, ToolOutput, ToolContext, ToolCall, ToolResult, ToolDefinition } from '../types/tool.js';
+import { ToolContext, ToolCall, ToolResult, ToolDefinition } from '../types/tool.js';
 import { getLogger } from '../utils/logger.js';
 
 export class ToolService {

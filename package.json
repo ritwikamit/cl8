@@ -1,6 +1,7 @@
 {
   "name": "@ritwikamit/cl8",
   "version": "0.1.0-alpha.14",
+  "type": "module",
   "description": "Terminal-first AI coding + automation assistant. Powered by OpenAI, Gemini, or Ollama.",
   "keywords": [
     "ai",

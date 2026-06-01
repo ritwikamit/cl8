@@ -2,9 +2,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { AgentMessage } from '../types/agent.js';
 import { ConversationMemory as ConversationMemoryType } from '../types/memory.js';
-import { generateId } from '../utils/crypto.js';
 import { getLogger } from '../utils/logger.js';
-import { createLogger } from 'winston';
 
 export class ConversationMemory {
   private sessions: Map<string, ConversationMemoryType> = new Map();
@@ -132,7 +130,7 @@ export class ConversationMemory {
           session.createdAt = new Date(session.createdAt);
           session.updatedAt = new Date(session.updatedAt);
           this.sessions.set(session.sessionId, session);
-        } catch (err) {
+        } catch {
           this.logger.warn(`Failed to load session ${file}`);
         }
       }

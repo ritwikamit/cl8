@@ -1,3 +1,6 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import chalk from 'chalk';
 import readline from 'node:readline';
 import { loadConfig, updateConfig } from '../config/index.js';
@@ -11,7 +14,9 @@ import { ContextMonitor } from '../ui/context-monitor.js';
 import { StatusBar } from '../ui/status-bar.js';
 import { showSplash, showReducedSplash } from '../ui/splash.js';
 import { getLogger } from '../utils/logger.js';
-import tips from '../ui/startup-tips.json';
+
+const __dirname = fileURLToPath(new URL('.', import.meta.url));
+const tips = JSON.parse(readFileSync(join(__dirname, '../ui/startup-tips.json'), 'utf8'));
 
 export interface BootOptions {
   reducedMotion?: boolean;

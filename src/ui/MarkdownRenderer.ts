@@ -43,17 +43,17 @@ export class MarkdownRenderer {
     return this.renderTokens(tokens, true);
   }
 
-  private renderTokens(tokens: Token[], inline = false): string {
+  private renderTokens(tokens: Token[], _inline = false): string {
     let output = '';
 
     for (const token of tokens) {
-      output += this.renderToken(token, inline);
+      output += this.renderToken(token, _inline);
     }
 
     return output;
   }
 
-  private renderToken(token: Token, inline = false): string {
+  private renderToken(token: Token, _inline = false): string {
     switch (token.type) {
       case 'heading':
         return this.renderHeading(token as Tokens.Heading);

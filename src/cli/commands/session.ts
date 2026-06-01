@@ -1,7 +1,6 @@
 import chalk from 'chalk';
 import { Engine } from '../../core/Engine.js';
 import { loadConfig } from '../../config/index.js';
-import { SessionData } from '../../types/memory.js';
 
 export async function sessionCommand(options: {
   list?: boolean;

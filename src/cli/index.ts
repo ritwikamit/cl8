@@ -1,5 +1,8 @@
 import { Command } from 'commander';
 import chalk from 'chalk';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { createLogger } from '../utils/logger.js';
 import { loadConfig } from '../config/index.js';
 import { chatCommand } from './commands/chat.js';
@@ -7,7 +10,9 @@ import { initCommand } from './commands/init.js';
 import { sessionCommand } from './commands/session.js';
 import { configCommand } from './commands/config.js';
 import { renderLogo } from '../ui/pixel-logo.js';
-import pkg from '../../package.json';
+
+const __dirname = fileURLToPath(new URL('.', import.meta.url));
+const pkg = JSON.parse(readFileSync(join(__dirname, '../../package.json'), 'utf8'));
 
 function showBanner(): void {
   const columns = process.stdout.columns || 100;
@@ -87,7 +92,7 @@ export function createCLI(): Command {
     .command('version')
     .description('Show version')
     .action(() => {
-      console.log('0.1.0');
+      console.log(pkg.version);
     });
 
   return program;

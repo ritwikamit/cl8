@@ -1,6 +1,5 @@
 import chalk from 'chalk';
 import { loadConfig, updateConfig, resetConfig, getConfigPath } from '../../config/index.js';
-import { CL8Config } from '../../types/config.js';
 
 export async function configCommand(options: {
   show?: boolean;
@@ -15,7 +14,7 @@ export async function configCommand(options: {
   }
 
   if (options.reset) {
-    const config = resetConfig();
+    resetConfig();
     console.log(chalk.green('Configuration reset to defaults.'));
     return;
   }
@@ -24,7 +23,7 @@ export async function configCommand(options: {
     const config = loadConfig();
     const keys = options.set.split('.');
 
-    let current: any = config;
+    let current: Record<string, any> = config as any;
     for (let i = 0; i < keys.length - 1; i++) {
       if (current[keys[i]] === undefined) current[keys[i]] = {};
       current = current[keys[i]];
@@ -43,7 +42,7 @@ export async function configCommand(options: {
   console.log('');
 }
 
-function printConfig(obj: any, prefix: string): void {
+function printConfig(obj: Record<string, any>, prefix: string): void {
   for (const [key, value] of Object.entries(obj)) {
     const fullKey = prefix ? `${prefix}.${key}` : key;
 
@@ -61,7 +60,7 @@ function printConfig(obj: any, prefix: string): void {
   }
 }
 
-function parseValue(value: string): any {
+function parseValue(value: string): string | number | boolean | null | undefined {
   if (value === 'true') return true;
   if (value === 'false') return false;
   if (value === 'null') return null;

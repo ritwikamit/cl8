@@ -9,9 +9,9 @@ export abstract class BaseTool {
     this.definition = definition;
   }
 
-  abstract execute(input: ToolInput, context: ToolContext): Promise<ToolOutput>;
+  abstract execute(_input: ToolInput, context: ToolContext): Promise<ToolOutput>;
 
-  validate(input: ToolInput): boolean {
+  validate(_input: ToolInput): boolean {
     return true;
   }
 

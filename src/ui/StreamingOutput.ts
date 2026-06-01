@@ -1,4 +1,3 @@
-import chalk from 'chalk';
 import { MarkdownRenderer } from './MarkdownRenderer.js';
 
 export class StreamingOutput {

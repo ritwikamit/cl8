@@ -1,5 +1,4 @@
 import readline from 'node:readline';
-import path from 'node:path';
 import chalk from 'chalk';
 import { Engine } from './Engine.js';
 import { SpinnerManager, SpinnerState } from '../ui/spinner-manager.js';

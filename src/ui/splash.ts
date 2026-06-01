@@ -3,12 +3,6 @@ import { renderLogo } from './pixel-logo.js';
 import { StatusBar, StatusBarData } from './status-bar.js';
 import { ThemeManager } from './theme-manager.js';
 
-const TIPS = [
-  'Ask questions, edit files, or run commands.',
-  'Use @files to reference code in your workspace.',
-  'Use /help for available commands.',
-];
-
 export async function showSplash(
   theme: ThemeManager,
   config: { ai: { defaultProvider: string }; workspace: { root: string } }

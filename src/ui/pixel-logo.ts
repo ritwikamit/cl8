@@ -1,5 +1,4 @@
 import gradient from 'gradient-string';
-import chalk from 'chalk';
 
 const LOGO_LINES = [
   ' ██████   ██        ██████ ',
@@ -10,7 +9,6 @@ const LOGO_LINES = [
 ];
 
 const WIDTH = 26;
-const HEIGHT = 5;
 
 const GRADIENT = gradient(['#00AAFF', '#9333EA', '#FF6BCB']);
 
