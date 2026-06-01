@@ -98,6 +98,14 @@ export class Agent {
     sessionId: string,
     workspace: string
   ): AsyncGenerator<string> {
+    if (this.isGreeting(input)) {
+      this.state.status = 'responding';
+      yield 'Hello! How can I help you today? 😊';
+      yield '\n\n';
+      this.state.status = 'idle';
+      return;
+    }
+
     if (this.isSimpleQuery(input)) {
       this.state.status = 'responding';
       yield* this.reflector.generateResponseStream(input, [], new Map(), {
@@ -203,10 +211,8 @@ export class Agent {
     this.state.status = 'idle';
   }
 
-  private isSimpleQuery(input: string): boolean {
+  private isGreeting(input: string): boolean {
     const trimmed = input.trim().toLowerCase();
-    
-    // Basic greetings and courtesies
     const greetings = ['hi', 'hello', 'hey', 'yo', 'sup', 'howdy', 'greetings', 'good morning', 'good afternoon', 'good evening'];
     if (greetings.includes(trimmed)) return true;
 
@@ -216,7 +222,15 @@ export class Agent {
       /^(thanks|thank you|thx|ty|ok|okay|sure|great|nice|good|awesome|cool|got it)(!|\.)?$/i,
       /^(bye|goodbye|see you|later|cya)(!|\.)?$/i,
     ];
+    for (const p of simplePatterns) {
+      if (p.test(trimmed)) return true;
+    }
+    return false;
+  }
 
+  private isSimpleQuery(input: string): boolean {
+    const trimmed = input.trim().toLowerCase();
+    
     // Detect simple coding requests that don't need complex planning or tool execution.
     // We avoid triggering this if the user asks to "run", "install", "create", "save", or "fix".
     const actionKeywords = ['run', 'install', 'create', 'save', 'fix', 'execute', 'apply', 'setup', 'build', 'deploy', 'search'];
@@ -233,7 +247,7 @@ export class Agent {
       /^(fibonacci|factorial|prime number|palindrome)/i
     ];
 
-    const allPatterns = [...simplePatterns, ...codingPatterns];
+    const allPatterns = codingPatterns;
     for (const p of allPatterns) {
       if (p.test(trimmed)) return true;
     }
