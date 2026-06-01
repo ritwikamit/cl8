@@ -96,6 +96,14 @@ export class InteractiveLoop {
       this.spinner.stop();
       console.log();
     });
+
+    process.stdin.on('close', () => {
+      if (this.running) {
+        setTimeout(() => {
+          process.stdin.resume();
+        }, 10);
+      }
+    });
   }
 
   async start(): Promise<void> {
@@ -117,32 +125,46 @@ export class InteractiveLoop {
 
   private async promptLoop(): Promise<void> {
     while (this.running) {
-      const input = await this.getInput();
+      try {
+        const input = await this.getInput();
 
-      if (input === null) {
-        this.running = false;
-        break;
-      }
+        if (input === null) {
+          this.running = false;
+          break;
+        }
 
-  let trimmed = input.trim();
-    if (!trimmed && this.multiLineBuffer.length === 0) continue;
+        let trimmed = input.trim();
+        if (!trimmed && this.multiLineBuffer.length === 0) continue;
 
-    if (trimmed.endsWith('\\')) {
-      this.multiLineBuffer.push(trimmed.slice(0, -1));
-        console.log(chalk.dim('  ... continuing'));
-        continue;
-      }
+        if (trimmed.endsWith('\\')) {
+          this.multiLineBuffer.push(trimmed.slice(0, -1));
+          console.log(chalk.dim('  ... continuing'));
+          continue;
+        }
 
-      if (this.multiLineBuffer.length > 0) {
-        this.multiLineBuffer.push(trimmed);
-        trimmed = this.multiLineBuffer.join('\n');
-        this.multiLineBuffer = [];
-      }
+        if (this.multiLineBuffer.length > 0) {
+          this.multiLineBuffer.push(trimmed);
+          trimmed = this.multiLineBuffer.join('\n');
+          this.multiLineBuffer = [];
+        }
 
-      if (trimmed.startsWith('/')) {
-        await this.handleCommand(trimmed);
-      } else {
-        await this.handleUserInput(trimmed);
+        if (trimmed.startsWith('/')) {
+          await this.handleCommand(trimmed);
+        } else {
+          await this.handleUserInput(trimmed);
+        }
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        this.logger.error('Loop error, restarting prompt', { error: message });
+        this.rl.close();
+        this.rl = readline.createInterface({
+          input: process.stdin,
+          output: process.stdout,
+          prompt: '',
+          terminal: true,
+        });
+        console.log(chalk.dim(`  ${'─'.repeat(Math.min((process.stdout.columns || 80) - 4, 30))}`));
+        console.log();
       }
     }
 
