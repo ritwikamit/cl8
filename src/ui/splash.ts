@@ -1,7 +1,10 @@
 import chalk from 'chalk';
+import gradient from 'gradient-string';
 import { renderLogo } from './pixel-logo.js';
 import { StatusBar, StatusBarData } from './status-bar.js';
 import { ThemeManager } from './theme-manager.js';
+
+const GRADIENT_FN = gradient(['#A855F7', '#C084FC', '#D946EF']);
 
 export async function showSplash(
   theme: ThemeManager,
@@ -18,7 +21,7 @@ export async function showSplash(
   for (const step of steps) {
     console.log(`  ${chalk.dim('▎')} ${chalk.dim(step)}…`);
   }
-  console.log(`  ${c.accent('▎')} ${chalk.bold('Ready')}`);
+  console.log(`  ${c.accent('▎')} ${GRADIENT_FN('Ready')}`);
   console.log();
 
   const statusData: StatusBarData = {

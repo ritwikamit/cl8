@@ -2,12 +2,20 @@ import readline from 'node:readline';
 import chalk from 'chalk';
 import { Engine } from './Engine.js';
 import { SpinnerManager, SpinnerState } from '../ui/spinner-manager.js';
+import { ThinkingAnimation } from '../ui/thinking-animation.js';
 import { markdown } from '../ui/MarkdownRenderer.js';
 import { ThemeManager } from '../ui/theme-manager.js';
 import { generateId } from '../utils/crypto.js';
 import { readFileAsAttachment } from '../utils/file.js';
 import { AgentMessage, AgentStatus, Attachment } from '../types/agent.js';
 import { getLogger } from '../utils/logger.js';
+
+const GRADIENT = ['#A855F7', '#C084FC', '#D946EF', '#E879F9', '#C026D3'];
+
+function gradientText(text: string): string {
+  const chars = text.split('');
+  return chars.map((c, i) => chalk.hex(GRADIENT[i % GRADIENT.length])(c)).join('');
+}
 
 const STATUS_MAP: Record<AgentStatus, SpinnerState> = {
   idle: 'thinking',
@@ -72,6 +80,7 @@ export class InteractiveLoop {
   private engine: Engine;
   private sessionId: string;
   private spinner: SpinnerManager;
+  private thinkingAnim: ThinkingAnimation;
   private rl: readline.Interface;
   private logger = getLogger();
   private running = true;
@@ -84,6 +93,7 @@ export class InteractiveLoop {
     this.theme = theme;
     this.sessionId = sessionId || generateId();
     this.spinner = new SpinnerManager();
+    this.thinkingAnim = new ThinkingAnimation();
 
     this.rl = readline.createInterface({
       input: process.stdin,
@@ -94,11 +104,8 @@ export class InteractiveLoop {
 
     this.rl.on('SIGINT', () => {
       this.spinner.stop();
+      this.thinkingAnim.stop();
       console.log();
-      // On SIGINT, we just want to clear the line and show a new prompt if we are idle
-      if (!this.spinner.reducedMotion) {
-        process.stdout.write('\n');
-      }
     });
 
     this.rl.on('close', () => {
@@ -184,7 +191,7 @@ export class InteractiveLoop {
 
   private getInput(): Promise<string | null> {
     return new Promise(resolve => {
-      const prompt = `${branch('◆')} ${branch('cl8')}${chalk.dim(' > ')}`;
+      const prompt = `${gradientText('◆ cl8')}${chalk.dim(' > ')}`;
       
       const onInterfaceClose = () => {
         resolve(null);
@@ -226,15 +233,14 @@ export class InteractiveLoop {
 
     try {
       const stream = await this.engine.processUserInput(input, this.sessionId);
-      this.spinner.start('thinking');
+      this.thinkingAnim.start('cl8 is thinking');
 
       let responseContent = '';
       let started = false;
 
       for await (const chunk of stream) {
         if (!started) {
-          this.spinner.stop();
-          process.stdout.write('\n');
+          this.thinkingAnim.stop();
           started = true;
         }
 
@@ -243,7 +249,7 @@ export class InteractiveLoop {
       }
 
       if (!started) {
-        this.spinner.stop();
+        this.thinkingAnim.stop();
       }
 
       if (responseContent) {
@@ -259,7 +265,7 @@ export class InteractiveLoop {
 
       await this.engine.addMessage(this.sessionId, assistantMessage);
     } catch (err) {
-      this.spinner.fail();
+      this.thinkingAnim.stop();
       const message = err instanceof Error ? err.message : String(err);
       console.log(chalk.red(`\n✖ Error: ${message}\n`));
       this.logger.error('Processing error', { error: message });
