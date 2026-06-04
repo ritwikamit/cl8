@@ -51,8 +51,24 @@ export class OllamaProvider extends BaseProvider {
     };
   }
 
+  private async fetchWithTimeout(url: string, options: RequestInit, timeoutMs = 120000): Promise<Response> {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const response = await fetch(url, { ...options, signal: controller.signal });
+      return response;
+    } catch (err) {
+      if (err instanceof Error && err.name === 'AbortError') {
+        throw new Error(`Ollama request timed out after ${timeoutMs / 1000}s. The model may still be loading. Try again or switch to a smaller model.`);
+      }
+      throw new Error(`Ollama connection failed: ${err instanceof Error ? err.message : String(err)}. Is Ollama running?`);
+    } finally {
+      clearTimeout(timeout);
+    }
+  }
+
   async chat(request: ChatCompletionRequest): Promise<ChatCompletionResponse> {
-    const response = await fetch(`${this.baseUrl}/api/chat`, {
+    const response = await this.fetchWithTimeout(`${this.baseUrl}/api/chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -85,7 +101,7 @@ export class OllamaProvider extends BaseProvider {
   }
 
   async *chatStream(request: ChatCompletionRequest): AsyncIterable<StreamChunk> {
-    const response = await fetch(`${this.baseUrl}/api/chat`, {
+    const response = await this.fetchWithTimeout(`${this.baseUrl}/api/chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -94,7 +110,7 @@ export class OllamaProvider extends BaseProvider {
         stream: true,
         options: this.buildOptions(request),
       }),
-    });
+    }, 180000);
 
     if (!response.ok) {
       throw new Error(`Ollama API error: ${response.status} ${response.statusText}`);
