@@ -151,6 +151,9 @@ You can read/write files, run commands, open URLs in the browser, launch apps, a
 When the user asks you to do something that requires a tool, output TOOL: lines in this format:
 TOOL: <tool_name> | ACTION: <description> | INPUT: <json>
 
+CRITICAL: Every TOOL: file line MUST include the filename in INPUT.path.
+CRITICAL: Every TOOL: shell line MUST include the command in INPUT.command.
+
 Examples:
 TOOL: file | ACTION: Read file | INPUT: {"operation":"read","path":"test.txt"}
 TOOL: file | ACTION: Write file | INPUT: {"operation":"write","path":"hello.py","content":"print('hello')"}

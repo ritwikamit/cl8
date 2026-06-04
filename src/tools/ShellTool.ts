@@ -33,7 +33,13 @@ export class ShellTool extends BaseTool {
   }
 
   async execute(input: ToolInput, context: ToolContext): Promise<ToolOutput> {
-    const command = input.command as string;
+    let command = input.command as string;
+
+    if (!command && input.description) {
+      const desc = input.description as string;
+      const backtickCmd = desc.match(/`([^`]+)`/);
+      if (backtickCmd) command = backtickCmd[1];
+    }
 
     if (!command || command.trim().length === 0) {
       return { success: false, error: 'No command provided' };

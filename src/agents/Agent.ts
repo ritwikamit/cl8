@@ -337,7 +337,7 @@ export class Agent {
     for (let i = 0; i < jsonStr.length; i++) {
       const ch = jsonStr[i];
       if (ch === '{') { if (depth === 0) start = i; depth++; }
-      else if (ch === '}') { depth--; if (depth === 0 && start >= 0) return [jsonStr.slice(start, i + 1)] as any; }
+      else if (ch === '}') { depth--; if (depth === 0 && start >= 0) { const j = jsonStr.slice(start, i + 1); return [j, j] as unknown as RegExpMatchArray; } }
       else if (ch === '"') { i++; while (i < jsonStr.length && jsonStr[i] !== '"') { if (jsonStr[i] === '\\') i++; i++; } }
     }
     return null;
