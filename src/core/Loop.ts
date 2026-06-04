@@ -234,6 +234,7 @@ export class InteractiveLoop {
       for await (const chunk of stream) {
         if (!started) {
           this.spinner.stop();
+          process.stdout.write('\n');
           started = true;
         }
 

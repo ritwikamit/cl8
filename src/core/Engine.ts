@@ -153,6 +153,7 @@ TOOL: <tool_name> | ACTION: <description> | INPUT: <json>
 
 Examples:
 TOOL: file | ACTION: Read file | INPUT: {"operation":"read","path":"test.txt"}
+TOOL: file | ACTION: Write file | INPUT: {"operation":"write","path":"hello.py","content":"print('hello')"}
 TOOL: shell | ACTION: Run command | INPUT: {"command":"dir"}
 TOOL: desktop | ACTION: Open browser | INPUT: {"action":"open_url","target":"https://google.com"}
 TOOL: desktop | ACTION: Launch notepad | INPUT: {"action":"launch_app","target":"notepad.exe"}

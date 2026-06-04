@@ -33,8 +33,14 @@ export class FileTool extends BaseTool {
   }
 
   async execute(input: ToolInput, context: ToolContext): Promise<ToolOutput> {
-    const operation = input.operation as FileOperation;
+    let operation = input.operation as string | undefined;
     const filePath = input.path as string;
+
+    if (!operation && filePath && input.content) {
+      operation = 'write';
+    } else if (!operation && filePath && !input.content) {
+      operation = 'read';
+    }
 
     if (!filePath) {
       return { success: false, error: 'Missing required field: path' };
@@ -60,7 +66,7 @@ export class FileTool extends BaseTool {
         case 'info':
           return await this.fileInfo(safePath);
         default:
-          return { success: false, error: `Unknown operation: ${operation}` };
+          return { success: false, error: `Unknown operation: ${operation}. Use write, read, edit, delete, list, or info.` };
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
