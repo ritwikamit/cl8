@@ -61,6 +61,7 @@ export class SecurityService {
     this.logger.info(`Approval requested for tool`, { tool: toolName, input });
 
     try {
+      process.stderr.write('\n');
       const rl = readline.createInterface({ input: process.stdin, output: process.stderr });
       const answer = await new Promise<string>(resolve => {
         rl.question(`  Allow ${toolName}${input.command ? ' ' + input.command : ''}? (y/N) `, resolve);

@@ -38,13 +38,22 @@ export class FileTool extends BaseTool {
 
     if (!filePath && input.description) {
       const desc = (input.description as string).toLowerCase();
-      const match = desc.match(/(?:write|create|edit|read|delete)\s+(.+)/i);
-      if (match) {
-        filePath = match[1].trim().split(/\s+/)[0].replace(/[^a-zA-Z0-9_\-\.\/\\]/g, '');
-      } else if (desc.includes('file') || desc.includes('script')) {
-        const words = desc.split(/\s+/);
-        const pyIdx = words.findIndex((w: string) => w.endsWith('.py'));
-        if (pyIdx >= 0) filePath = words[pyIdx];
+      const words = desc.split(/\s+/);
+      const namedWord = words.find(w => w.endsWith('.py') || w.endsWith('.js') || w.endsWith('.ts') || w.endsWith('.txt') || w.endsWith('.json') || w.endsWith('.html'));
+      if (namedWord) {
+        filePath = namedWord.replace(/[^a-zA-Z0-9_\-\.\/\\]/g, '');
+      } else if (input.content && typeof input.content === 'string') {
+        if (input.content.includes('import cv2') || input.content.includes('import opencv')) {
+          filePath = 'script.py';
+        } else if (input.content.includes('import') || input.content.includes('def ') || input.content.includes('class ')) {
+          filePath = 'script.py';
+        } else if (input.content.includes('<!DOCTYPE html>') || input.content.includes('<html')) {
+          filePath = 'index.html';
+        } else if (input.content.includes('{') && input.content.includes('}') && (input.content.includes('"name"') || input.content.includes('"version"'))) {
+          filePath = 'package.json';
+        } else {
+          filePath = 'output.txt';
+        }
       }
     }
 
