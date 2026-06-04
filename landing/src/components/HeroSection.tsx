@@ -14,13 +14,13 @@ export default function HeroSection() {
       <div className="relative z-10 flex flex-col h-full pt-20">
         <div className="flex-1 flex flex-col items-center justify-center px-8">
           <div className="max-w-5xl text-center">
-            <p className="overline mb-6">Terminal AI · v0.1.0</p>
+            <p className="overline mb-6">Terminal AI · v0.1.0-alpha.33</p>
             <h1 className="font-heading italic text-white text-[clamp(3rem,12vw,8rem)] leading-[0.82] tracking-[-4px] md:tracking-[-6px]">
-              Code beyond<br />
-              <span className="bg-gradient-to-r from-white/90 via-white/70 to-white/90 bg-clip-text text-transparent">the terminal</span>
+              Your terminal<br />
+              <span className="bg-gradient-to-r from-white/90 via-white/70 to-white/90 bg-clip-text text-transparent">is the IDE</span>
             </h1>
             <p className="mt-8 text-base md:text-lg text-white/50 max-w-xl mx-auto font-body font-normal leading-relaxed">
-              An AI assistant that lives in your command line. Connect Ollama, OpenAI, or Gemini — local or cloud — and ship code faster.
+              An AI-powered CLI with full IDE capabilities — code intelligence, version control, file management, and desktop automation. Connect any model and work without leaving the terminal.
             </p>
           </div>
 

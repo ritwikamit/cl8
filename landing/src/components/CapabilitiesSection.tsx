@@ -4,18 +4,33 @@ import FadingVideo from "./FadingVideo";
 const cards = [
   {
     number: "01",
-    title: "Code Generation",
-    body: "Describe what you need in plain English. CL8 generates production-ready code across files with intelligent suggestions.",
+    title: "Multi-Provider AI",
+    body: "Switch between Ollama, OpenAI, and Gemini seamlessly through a single unified interface. Use local models or cloud APIs — CL8 abstracts it all.",
   },
   {
     number: "02",
-    title: "Multi-Provider",
-    body: "Seamlessly switch between Ollama, OpenAI, and Gemini through a single unified terminal interface.",
+    title: "Code Intelligence",
+    body: "Built-in LSP integration for go-to-definition, find references, hover type info, diagnostics, rename symbol, code completion, and document symbols across TypeScript, Python, Go, Rust, and more.",
   },
   {
     number: "03",
-    title: "Context-Aware",
-    body: "CL8 understands your entire project — structure, changes, history — and provides relevant assistance every session.",
+    title: "Git Integration",
+    body: "Full version control from the CLI — status, diff, log, commit, add, branch, checkout, blame, stash, push, pull, init, clone, and remote management.",
+  },
+  {
+    number: "04",
+    title: "File Management",
+    body: "Read, write, edit, delete, and browse files with smart path inference. Auto-detects filenames from context and falls back to content-based language detection.",
+  },
+  {
+    number: "05",
+    title: "Desktop Automation",
+    body: "Open URLs in the browser and launch desktop applications directly from prompts. Works cross-platform on Windows, macOS, and Linux.",
+  },
+  {
+    number: "06",
+    title: "Access Modes",
+    body: "Three security modes: Default (ask before dangerous ops), Review (auto-approve safe ops), and Full (autonomous — installs tools and fixes issues without prompting).",
   },
 ];
 
