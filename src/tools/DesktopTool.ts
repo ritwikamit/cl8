@@ -35,10 +35,17 @@ export class DesktopTool extends BaseTool {
 
   async execute(input: ToolInput, _context: ToolContext): Promise<ToolOutput> {
     const action = input.action as string;
-    const target = input.target as string;
+    let target = input.target as string;
+
+    if (!target && action === 'launch_app' && input.description) {
+      const desc = (input.description as string).toLowerCase();
+      const appMatch = desc.match(/(?:launch|open|start|run)\s+(.+)/i);
+      target = appMatch ? appMatch[1].trim() : desc;
+    }
 
     if (!target) {
-      return { success: false, error: 'Missing required field: target' };
+      const desc = input.description ? ` (from: ${input.description})` : '';
+      return { success: false, error: `Missing target. Usage: {"action":"${action || 'launch_app'}","target":"app_name"}${desc}` };
     }
 
     try {
@@ -78,12 +85,15 @@ export class DesktopTool extends BaseTool {
   private async launchApp(appName: string): Promise<ToolOutput> {
     const platform = process.platform;
     let command: string;
+    const hasPath = appName.includes(path.sep) || appName.includes('/');
+    const isExe = appName.endsWith('.exe');
 
     if (platform === 'win32') {
-      const appPath = appName.includes(path.sep) || appName.endsWith('.exe')
-        ? appName
-        : appName;
-      command = `start "" "${appPath}"`;
+      if (hasPath || isExe) {
+        command = `start "" "${appName}"`;
+      } else {
+        command = `start "" ${appName}`;
+      }
     } else if (platform === 'darwin') {
       command = `open -a "${appName}"`;
     } else {

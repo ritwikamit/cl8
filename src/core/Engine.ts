@@ -155,6 +155,7 @@ Examples:
 TOOL: file | ACTION: Read file | INPUT: {"operation":"read","path":"test.txt"}
 TOOL: shell | ACTION: Run command | INPUT: {"command":"dir"}
 TOOL: desktop | ACTION: Open browser | INPUT: {"action":"open_url","target":"https://google.com"}
+TOOL: desktop | ACTION: Launch notepad | INPUT: {"action":"launch_app","target":"notepad.exe"}
 TOOL: search | ACTION: Search code | INPUT: {"pattern":"TODO","include":"*.ts"}
 
 If no tool is needed, just respond directly.
