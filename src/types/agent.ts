@@ -35,6 +35,7 @@ export interface AgentConfig {
   systemPrompt: string;
   allowedTools: string[];
   contextWindow: number;
+  autoApprove?: boolean;
 }
 
 export interface AgentState {

@@ -12,7 +12,7 @@ import { getLogger } from '../utils/logger.js';
 const STATUS_MAP: Record<AgentStatus, SpinnerState> = {
   idle: 'thinking',
   thinking: 'thinking',
-  planning: 'planning',
+  planning: 'thinking',
   executing: 'executing',
   reflecting: 'reflecting',
   responding: 'responding',
@@ -30,7 +30,7 @@ const SLASH_COMMANDS: Record<string, { description: string; handler: (args: stri
   \`/status\`     - Show current session info
   \`/session\`    - Show session details
   \`/tokens\`     - Show token usage
-  \`/mode <ask|auto|deny>\` - Set approval mode
+  \`/mode <default|review|full>\` - Set access mode
   \`/upload <path>\` - Upload an image or text file
   \`/exit\`       - Exit CL8
 
@@ -229,26 +229,22 @@ export class InteractiveLoop {
       this.spinner.start('thinking');
 
       let responseContent = '';
-      let hasStoppedSpinner = false;
+      let started = false;
 
       for await (const chunk of stream) {
-        const status = this.engine.getAgent().getState().status;
-        
-        // STOP the spinner once we start responding so it doesn't overwrite the text
-        if (status === 'responding' && !hasStoppedSpinner) {
+        if (!started) {
           this.spinner.stop();
-          hasStoppedSpinner = true;
-        } else if (!hasStoppedSpinner) {
-          this.spinner.update(STATUS_MAP[status] || 'thinking');
+          started = true;
         }
 
         process.stdout.write(chunk);
         responseContent += chunk;
       }
 
-      this.spinner.stop();
+      if (!started) {
+        this.spinner.stop();
+      }
 
-      // Ensure we start a new line after the streamed response
       if (responseContent) {
         process.stdout.write('\n\n');
       }
@@ -286,11 +282,27 @@ export class InteractiveLoop {
 
     if (cmd === '/mode') {
       const mode = args.toLowerCase();
-      if (['ask', 'auto', 'deny'].includes(mode)) {
-        this.engine.getSecurityService().setApprovalMode(mode as any);
-        console.log(chalk.green(`Approval mode set to: ${mode}\n`));
+      const MODE_MAP: Record<string, { approval: string; autoApprove: boolean; label: string }> = {
+        default: { approval: 'ask', autoApprove: false, label: 'Default (ask before dangerous operations)' },
+        review: { approval: 'auto', autoApprove: false, label: 'Review (auto-approve safe operations)' },
+        full: { approval: 'auto', autoApprove: true, label: 'Full access (auto-approve everything)' },
+        ask: { approval: 'ask', autoApprove: false, label: 'Ask before dangerous operations' },
+        auto: { approval: 'auto', autoApprove: false, label: 'Auto-approve safe operations' },
+        deny: { approval: 'deny', autoApprove: false, label: 'Deny all operations' },
+      };
+
+      const entry = MODE_MAP[mode];
+      if (entry) {
+        this.engine.getSecurityService().setApprovalMode(entry.approval as any);
+        this.engine.getAgent().setAutoApprove(entry.autoApprove);
+        const color = mode === 'full' ? chalk.hex('#A855F7').bold : chalk.green;
+        console.log(color(`  ✓ Access mode: ${entry.label}\n`));
       } else {
-        console.log(chalk.yellow('Usage: /mode <ask|auto|deny>\n'));
+        console.log(chalk.yellow('  Usage: /mode <default|review|full>\n'));
+        console.log(chalk.dim('    default  - Ask before dangerous operations'));
+        console.log(chalk.dim('    review   - Auto-approve safe operations'));
+        console.log(chalk.dim('    full     - Auto-approve everything'));
+        console.log();
       }
       return;
     }

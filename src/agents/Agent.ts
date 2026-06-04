@@ -7,23 +7,33 @@ import {
   AgentMessage,
   AgentState,
   AgentConfig,
-  AgentThought,
   PlanStep,
   ExecutionResult,
 } from '../types/agent.js';
 import { ToolDefinition, ToolContext } from '../types/tool.js';
 import { getLogger } from '../utils/logger.js';
 import { generateId } from '../utils/crypto.js';
+import chalk from 'chalk';
 
 const DEFAULT_CONFIG: AgentConfig = {
   maxTurns: 25,
   maxRetries: 3,
   temperature: 0.7,
   topP: 0.9,
-    systemPrompt: `You are CL8, a terminal-based AI assistant that can control the user's computer.
-You can read/write files, execute shell commands, search code, open URLs in the browser, and launch applications.
-Always explain your reasoning clearly and concisely.
-Follow security guidelines and never execute dangerous commands without approval.`,
+  systemPrompt: `You are CL8, a terminal-based AI assistant that controls the user's computer.
+
+You can read/write files, run commands, open URLs in the browser, launch apps, and search code.
+
+When the user asks you to do something that requires a tool, output TOOL: lines in this format:
+TOOL: <tool_name> | ACTION: <description> | INPUT: <json>
+
+Examples:
+TOOL: file | ACTION: Read file | INPUT: {"operation":"read","path":"test.txt"}
+TOOL: shell | ACTION: Run command | INPUT: {"command":"dir"}
+TOOL: desktop | ACTION: Open browser | INPUT: {"action":"open_url","target":"https://google.com"}
+TOOL: search | ACTION: Search code | INPUT: {"pattern":"TODO","include":"*.ts"}
+
+If no tool is needed, just respond directly.`,
   allowedTools: ['file', 'shell', 'search', 'desktop'],
   contextWindow: 100000,
 };
@@ -92,142 +102,6 @@ export class Agent {
     yield* this.runAgentLoop(input, sessionId, workspace);
   }
 
-  private async *runAgentLoop(
-    input: string,
-    sessionId: string,
-    workspace: string
-  ): AsyncGenerator<string> {
-    if (this.isGreeting(input)) {
-      this.state.status = 'responding';
-      yield 'Hello! How can I help you today?';
-      yield '\n\n';
-      this.state.status = 'idle';
-      return;
-    }
-
-    this.state.status = 'planning';
-
-    const toolContext: ToolContext = {
-      workspace,
-      sessionId,
-      approved: true,
-    };
-
-    let thought: AgentThought = await this.planner.createPlan(input, this.state.messages);
-    this.state.thoughts.push(thought);
-    
-    if (thought.plan && thought.plan.length > 0) {
-      yield `**Plan:**\n${thought.plan.map((s, i) => `${i + 1}. ${s}`).join('\n')}\n\n`;
-    }
-
-    this.state.status = 'executing';
-    let steps: PlanStep[] = this.parsePlanSteps(thought);
-    let results = new Map<string, ExecutionResult>();
-
-    if (steps.length === 0) {
-      yield `_Let me figure this out..._\n\n`;
-      const toolList = this.config.allowedTools
-        .map(t => {
-          const def = this.toolService.getTools().find(d => d.name === t);
-          return def ? `- **${def.name}**: ${def.description}` : `- ${t}`;
-        }).join('\n');
-
-      const fallbackMsgs: AgentMessage[] = [
-        ...this.state.messages.slice(-5),
-        {
-          id: generateId(),
-          role: 'user',
-          content: `${input}
-
-Available tools:
-${toolList}
-
-If this task requires using any tool, output EXACTLY this format (one line per tool call):
-TOOL: <tool_name> | ACTION: <what to do> | INPUT: <json>
-
-Example: TOOL: file | ACTION: Read the file | INPUT: {"operation":"read","path":"test.txt"}
-
-If no tool is needed, just respond normally.`,
-          timestamp: new Date(),
-        },
-      ];
-
-      const fallback = await this.provider.chat({
-        messages: fallbackMsgs,
-        maxTokens: 1024,
-        temperature: 0.2,
-      });
-      thought = this.planner.parseToThought(fallback.content);
-      this.state.thoughts.push(thought);
-      steps = this.parsePlanSteps(thought);
-    }
-
-    for (const step of steps) {
-      yield `**Executing:** ${step.description}\n\n`;
-
-      if (this.canAutoExecute(step)) {
-        const result = await this.executor.executeStep(step, toolContext);
-        results.set(step.id, result);
-
-        if (result.success) {
-          const preview = result.output.slice(0, 500);
-          yield `✅ ${preview}\n\n`;
-        } else {
-          yield `❌ Error: ${result.error}\n\n`;
-        }
-      } else {
-        results.set(step.id, { success: true, output: '' });
-      }
-
-      this.state.turn++;
-
-      if (this.state.turn >= this.config.maxTurns) {
-        yield '⚠️ Max turns reached. Stopping.\n\n';
-        break;
-      }
-    }
-
-    this.state.status = 'reflecting';
-
-    const reflection = await this.reflector.reflect(input, steps, results, this.state.messages);
-
-    if (!reflection.satisfied && reflection.needsReplan) {
-      yield `**Need to replan:** ${reflection.feedback}\n\n`;
-
-      const failedSteps = steps.filter(s => s.status === 'failed');
-      if (failedSteps.length > 0) {
-        thought = await this.planner.revisePlan(
-          input,
-          this.state.messages,
-          failedSteps[0],
-          failedSteps[0].error || 'Unknown error'
-        );
-        this.state.thoughts.push(thought);
-
-        if (thought.plan && thought.plan.length > 0) {
-          yield `**Revised Plan:**\n${thought.plan.map((s, i) => `${i + 1}. ${s}`).join('\n')}\n\n`;
-        }
-
-        const newSteps = this.parsePlanSteps(thought);
-        for (const step of newSteps) {
-          yield `**Executing:** ${step.description}\n\n`;
-          if (this.canAutoExecute(step)) {
-            const result = await this.executor.executeStep(step, toolContext);
-            results.set(step.id, result);
-            yield result.success ? `✅ Done\n\n` : `❌ ${result.error}\n\n`;
-          }
-        }
-      }
-    }
-
-    this.state.status = 'responding';
-
-    yield* this.reflector.generateResponseStream(input, steps, results, thought);
-    yield '\n\n';
-
-    this.state.status = 'idle';
-  }
-
   private isGreeting(input: string): boolean {
     const trimmed = input.trim().toLowerCase();
     const pureGreetings = ['hi', 'hello', 'hey', 'yo', 'sup', 'howdy', 'greetings'];
@@ -243,32 +117,173 @@ If no tool is needed, just respond normally.`,
     return false;
   }
 
-  private isSimpleQuery(input: string): boolean {
-    const trimmed = input.trim().toLowerCase();
-    const actionKeywords = ['run', 'install', 'create', 'save', 'fix', 'execute', 'apply', 'setup', 'build', 'deploy', 'search', 'open', 'launch', 'start', 'delete', 'remove', 'move', 'copy', 'rename'];
-    if (actionKeywords.some(kw => trimmed.includes(kw))) return false;
-
-    const simpleExplanations = [
-      /^(what is|explain|define|what does|how does) .{1,60}\?*$/i,
-      /^(what can you do|who are you|what are you|what is cl8|tell me about yourself)\??$/i,
-    ];
-    for (const p of simpleExplanations) {
-      if (p.test(trimmed)) return true;
+  private async *runAgentLoop(
+    input: string,
+    sessionId: string,
+    workspace: string
+  ): AsyncGenerator<string> {
+    if (this.isGreeting(input)) {
+      this.state.status = 'responding';
+      yield 'Hello! How can I help you today?';
+      yield '\n\n';
+      this.state.status = 'idle';
+      return;
     }
 
-    return false;
-  }
+    const toolContext: ToolContext = {
+      workspace,
+      sessionId,
+      approved: this.config.autoApprove === true,
+    };
 
-  private parsePlanSteps(thought: AgentThought): PlanStep[] {
-    if (thought.steps && thought.steps.length > 0) {
-      return thought.steps.map(s => ({ ...s, status: 'pending' as const }));
+    const toolList = this.config.allowedTools
+      .map(t => {
+        const def = this.toolService.getTools().find(d => d.name === t);
+        return def ? `- ${def.name}: ${def.description}` : `- ${t}`;
+      }).join('\n');
+
+    const systemPrompt = `${this.config.systemPrompt}\n\nAvailable:\n${toolList}`;
+
+    this.state.status = 'thinking';
+
+    const messages: AgentMessage[] = this.state.messages.slice(-10);
+
+    let fullResponse = '';
+    let lineBuffer = '';
+
+    try {
+      const stream = this.provider.chatStream({
+        messages,
+        systemPrompt,
+        maxTokens: 4096,
+        temperature: this.config.temperature,
+      });
+
+      for await (const chunk of stream) {
+        lineBuffer += chunk.content;
+        let newlineIdx;
+        while ((newlineIdx = lineBuffer.indexOf('\n')) >= 0) {
+          const line = lineBuffer.slice(0, newlineIdx);
+          lineBuffer = lineBuffer.slice(newlineIdx + 1);
+          if (line.trim().startsWith('TOOL:')) {
+            fullResponse += line + '\n';
+          } else {
+            fullResponse += line + '\n';
+            yield line + '\n';
+          }
+        }
+      }
+      if (lineBuffer.length > 0) {
+        if (lineBuffer.trim().startsWith('TOOL:')) {
+          fullResponse += lineBuffer;
+        } else {
+          fullResponse += lineBuffer;
+          yield lineBuffer;
+        }
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      this.state.status = 'error';
+      this.state.error = message;
+      yield `\nError: ${message}\n\n`;
+      this.state.status = 'idle';
+      return;
     }
-    // REMOVED: Dangerous fallback that treated plan text as shell commands
-    return [];
+
+    const steps = this.parseInlineSteps(fullResponse);
+
+    if (steps.length === 0) {
+      this.state.status = 'idle';
+      return;
+    }
+
+    this.state.status = 'executing';
+
+    const results = new Map<string, ExecutionResult>();
+
+    for (const step of steps) {
+      this.state.turn++;
+      yield `\n  ${this.colorArrow('→')} ${step.description}...`;
+
+      try {
+        const result = await this.executor.executeStep(step, toolContext);
+        results.set(step.id, result);
+
+        if (result.success) {
+          yield ` ${this.colorCheck('✓')}\n`;
+          if (result.output && result.output.length < 300) {
+            yield `    ${result.output}\n`;
+          }
+        } else {
+          yield ` ${this.colorCross('✗')}\n`;
+          if (result.error) {
+            yield `    ${result.error}\n`;
+          }
+        }
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        yield ` ${this.colorCross('✗')}\n`;
+        yield `    ${message}\n`;
+      }
+
+      if (this.state.turn >= this.config.maxTurns) {
+        yield `\n  ⚠ Max turns reached.\n`;
+        break;
+      }
+    }
+
+    this.state.status = 'idle';
+    yield '\n';
   }
 
-  private canAutoExecute(step: PlanStep): boolean {
-    return ['shell', 'file', 'search', 'desktop'].includes(step.tool);
+  private parseInlineSteps(response: string): PlanStep[] {
+    const steps: PlanStep[] = [];
+    const lines = response.split('\n');
+
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed.startsWith('TOOL:')) continue;
+
+      const toolMatch = trimmed.match(/TOOL:\s*(\w+)/i);
+      const actionMatch = trimmed.match(/ACTION:\s*(.+?)(?=\s*\|\s*INPUT|\s*$)/i);
+      const inputMatch = trimmed.match(/INPUT:\s*(\{.+?\})/is);
+
+      if (!toolMatch) continue;
+
+      const tool = toolMatch[1].toLowerCase();
+      const description = actionMatch ? actionMatch[1].trim() : trimmed;
+      let input: Record<string, unknown> = {};
+
+      if (inputMatch) {
+        try {
+          input = JSON.parse(inputMatch[1]);
+        } catch {
+          input = {};
+        }
+      }
+
+      steps.push({
+        id: generateId(),
+        description,
+        tool,
+        input,
+        status: 'pending',
+      });
+    }
+
+    return steps;
+  }
+
+  private colorArrow(text: string): string {
+    return chalk.hex('#A855F7')(text);
+  }
+
+  private colorCheck(text: string): string {
+    return chalk.green(text);
+  }
+
+  private colorCross(text: string): string {
+    return chalk.red(text);
   }
 
   getState(): AgentState {
@@ -281,5 +296,9 @@ If no tool is needed, just respond normally.`,
 
   getConfig(): AgentConfig {
     return { ...this.config };
+  }
+
+  setAutoApprove(val: boolean): void {
+    this.config.autoApprove = val;
   }
 }
