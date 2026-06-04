@@ -15,9 +15,9 @@ export default function HeroSection() {
         <div className="flex-1 flex flex-col items-center justify-center px-8">
           <div className="max-w-5xl text-center">
             <p className="overline mb-6">Terminal AI · v0.1.0-alpha.33</p>
-            <h1 className="font-heading italic text-white text-[clamp(3rem,12vw,8rem)] leading-[0.82] tracking-[-4px] md:tracking-[-6px]">
+            <h1 className="font-heading italic text-white text-[clamp(2.5rem,10vw,7rem)] leading-[0.88] tracking-[-2px] md:tracking-[-3px] px-2">
               Your terminal<br />
-              <span className="bg-gradient-to-r from-white/90 via-white/70 to-white/90 bg-clip-text text-transparent">is the IDE</span>
+              is the <span className="bg-gradient-to-r from-white via-white/80 to-white bg-clip-text text-transparent inline-block px-1">IDE</span>
             </h1>
             <p className="mt-8 text-base md:text-lg text-white/50 max-w-xl mx-auto font-body font-normal leading-relaxed">
               An AI-powered CLI with full IDE capabilities — code intelligence, version control, file management, and desktop automation. Connect any model and work without leaving the terminal.

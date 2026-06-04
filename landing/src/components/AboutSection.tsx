@@ -32,6 +32,9 @@ export default function AboutSection() {
                 It connects to Ollama, OpenAI, and Gemini — local or cloud — with a unified interface
                 that understands your project structure and delivers context-aware help.
               </p>
+              <p className="mt-8 text-sm text-white/20 font-body">
+                Built by <span className="text-white/40">Amit Chauhan</span>
+              </p>
             </div>
             <div className="flex-1 grid grid-cols-2 gap-8">
               {stats.map((s) => (
