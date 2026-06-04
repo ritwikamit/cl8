@@ -38,6 +38,22 @@ ${toolsDesc}
 For each step that requires a tool, output ONE LINE in this format:
 TOOL: <tool_name> | ACTION: <brief description> | INPUT: <json>
 
+EXAMPLES:
+User: "create a file called hello.py that prints hello"
+TOOL: file | ACTION: Create hello.py | INPUT: {"operation":"write","path":"hello.py","content":"print('hello')"}
+
+User: "open google in browser"
+TOOL: desktop | ACTION: Open google | INPUT: {"action":"open_url","target":"https://google.com"}
+
+User: "run npm install"
+TOOL: shell | ACTION: Install npm dependencies | INPUT: {"command":"npm install","workdir":"."}
+
+User: "search for all TODO comments"
+TOOL: search | ACTION: Search for TODO | INPUT: {"pattern":"TODO","include":"*.ts"}
+
+User: "launch notepad"
+TOOL: desktop | ACTION: Open notepad | INPUT: {"action":"launch_app","target":"notepad.exe"}
+
 Rules:
 - Use "file" tool for reading, writing, creating, editing files.
 - Use "shell" tool for running commands.

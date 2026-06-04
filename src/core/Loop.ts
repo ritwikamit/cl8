@@ -87,6 +87,7 @@ export class InteractiveLoop {
   private multiLineBuffer: string[] = [];
   private theme: ThemeManager;
   private pendingAttachments: Attachment[] = [];
+  private keepAliveTimer: NodeJS.Timeout | null = null;
 
   constructor(engine: Engine, theme: ThemeManager, sessionId?: string) {
     this.engine = engine;
@@ -118,6 +119,7 @@ export class InteractiveLoop {
 
   async start(): Promise<void> {
     try {
+      this.keepAliveTimer = setInterval(() => {}, 1000 * 60 * 60); // 1 hour keep-alive
       await this.engine.initialize();
       this.showHelpHint();
       await this.promptLoop();
@@ -191,6 +193,9 @@ export class InteractiveLoop {
 
   private getInput(): Promise<string | null> {
     return new Promise(resolve => {
+      // Force stdin to remain active to prevent the event loop from emptying
+      process.stdin.resume();
+      
       const prompt = `${gradientText('◆ cl8')}${chalk.dim(' > ')}`;
       
       this.rl.question(prompt, (answer: string) => {
@@ -364,6 +369,7 @@ export class InteractiveLoop {
   }
 
   private cleanup(): void {
+    if (this.keepAliveTimer) clearInterval(this.keepAliveTimer);
     this.rl.close();
     this.engine.shutdown();
     console.log(chalk.hex('#6C5CE7')('\n  Goodbye! 👋\n'));

@@ -194,6 +194,8 @@ Guidelines:
 3. Read files before editing them.
 4. Keep responses clear and concise.
 5. If a tool execution fails, analyze the error and try a fix (like using a different command or fixing a path).
-6. Ask for clarification when needed.`;
+6. You DO NOT have the ability to simulate keystrokes or interact with GUI applications. If asked to "type" into an app, write to a file instead.
+7. To open a file to show the user, use the shell tool (e.g., 'start <filename>' on Windows, 'open <filename>' on Mac).
+8. Ask for clarification when needed.`;
   }
 }
