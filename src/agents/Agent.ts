@@ -78,16 +78,18 @@ export class Agent {
     input: string,
     sessionId: string,
     workspace: string,
-    history: AgentMessage[] = []
+    history: AgentMessage[] = [],
+    askApproval?: (toolName: string, input: Record<string, unknown>) => Promise<boolean>
   ): Promise<AsyncIterable<string>> {
-    return this.processUserInputStream(input, sessionId, workspace, history);
+    return this.processUserInputStream(input, sessionId, workspace, history, askApproval);
   }
 
   private async *processUserInputStream(
     input: string,
     sessionId: string,
     workspace: string,
-    history: AgentMessage[]
+    history: AgentMessage[],
+    askApproval?: (toolName: string, input: Record<string, unknown>) => Promise<boolean>
   ): AsyncGenerator<string> {
     this.state = this.createInitialState();
     this.state.status = 'thinking';
@@ -101,7 +103,7 @@ export class Agent {
 
     this.state.messages = [...history, userMessage];
 
-    yield* this.runAgentLoop(input, sessionId, workspace);
+    yield* this.runAgentLoop(input, sessionId, workspace, askApproval);
   }
 
   private isGreeting(input: string): boolean {
@@ -122,7 +124,8 @@ export class Agent {
   private async *runAgentLoop(
     input: string,
     sessionId: string,
-    workspace: string
+    workspace: string,
+    askApproval?: (toolName: string, input: Record<string, unknown>) => Promise<boolean>
   ): AsyncGenerator<string> {
     if (this.isGreeting(input)) {
       this.state.status = 'responding';
@@ -136,6 +139,7 @@ export class Agent {
       workspace,
       sessionId,
       approved: this.config.autoApprove === true,
+      askApproval,
     };
 
     const toolList = this.config.allowedTools

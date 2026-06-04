@@ -120,12 +120,13 @@ export class Engine {
 
   async processUserInput(
     input: string,
-    sessionId: string
+    sessionId: string,
+    askApproval?: (toolName: string, input: Record<string, unknown>) => Promise<boolean>
   ): Promise<AsyncIterable<string>> {
     const history = await this.getContext(sessionId);
     const workspace = this.config.workspace.root;
 
-    return this.agent.processUserInput(input, sessionId, workspace, history);
+    return this.agent.processUserInput(input, sessionId, workspace, history, askApproval);
   }
 
   async shutdown(): Promise<void> {

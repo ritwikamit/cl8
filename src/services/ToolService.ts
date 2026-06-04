@@ -61,7 +61,7 @@ export class ToolService {
     }
 
     if (tool.requiresApproval() && !context.approved) {
-      const approved = await this.security.requestApproval(call.name, call.input);
+      const approved = await this.security.requestApproval(call.name, call.input, context);
       if (!approved) {
         const result: ToolResult = {
           callId: call.id,

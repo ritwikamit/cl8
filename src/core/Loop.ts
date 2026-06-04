@@ -225,7 +225,17 @@ export class InteractiveLoop {
     await this.engine.addMessage(this.sessionId, userMessage);
 
     try {
-      const stream = await this.engine.processUserInput(input, this.sessionId);
+      const stream = await this.engine.processUserInput(input, this.sessionId, async (toolName, toolInput) => {
+        this.thinkingAnim.stop();
+        console.log();
+        return new Promise(resolve => {
+          this.rl.question(`  Allow ${toolName}${toolInput.command ? ' `' + toolInput.command + '`' : ''}? (y/N) `, answer => {
+            console.log();
+            resolve(answer.trim().toLowerCase() === 'y');
+          });
+        });
+      });
+
       this.thinkingAnim.start('cl8 is thinking');
 
       let responseContent = '';

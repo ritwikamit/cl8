@@ -29,6 +29,7 @@ export interface ToolContext {
   workspace: string;
   sessionId: string;
   approved: boolean;
+  askApproval?: (toolName: string, input: Record<string, unknown>) => Promise<boolean>;
   metadata?: Record<string, unknown>;
 }
 

@@ -57,8 +57,13 @@ export class SecurityService {
     this.config.approvalMode = mode;
   }
 
-  async requestApproval(toolName: string, input: Record<string, unknown>): Promise<boolean> {
+  async requestApproval(toolName: string, input: Record<string, unknown>, context?: import('../types/tool.js').ToolContext): Promise<boolean> {
     this.logger.info(`Approval requested for tool`, { tool: toolName, input });
+
+    if (context?.askApproval) {
+      process.stderr.write('\x07\n'); // beep
+      return await context.askApproval(toolName, input);
+    }
 
     try {
       process.stderr.write('\x07'); // beep
