@@ -91,6 +91,10 @@ export class Reflector {
       prompt = `Original request: ${userInput}\n\nExecution summary:\n${stepsSummary}\n\nProvide a clear, helpful summary of what was done and the results. Include any code that was generated or modified.`;
     }
 
+    const systemPrompt = `You are CL8, a terminal-based AI assistant. Follow the user's instructions clearly.
+If no execution steps were performed, just provide a helpful conversational response or the requested code.
+Do NOT output TOOL: lines in this response; those are for the planning phase only.`;
+
     const messages: AgentMessage[] = [
       {
         id: generateId(),
@@ -102,6 +106,7 @@ export class Reflector {
 
     const stream = this.provider.chatStream({
       messages,
+      systemPrompt, // Added system prompt for identity
       maxTokens: 2048,
       temperature: 0.5,
     });

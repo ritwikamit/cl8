@@ -58,4 +58,4 @@ export function getProviderConfig(config: {
   }
 }
 
-export { BaseProvider, OpenAIProvider, GeminiProvider, OllamaProvider };
+export { BaseProvider };

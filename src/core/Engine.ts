@@ -193,6 +193,6 @@ Guidelines:
 3. Read files before editing them.
 4. Keep responses clear and concise.
 5. If a tool execution fails, analyze the error and try a fix (like using a different command or fixing a path).
-6. Ask for clarification when needed.
+6. Ask for clarification when needed.`;
   }
 }

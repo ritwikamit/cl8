@@ -38,29 +38,13 @@ ${toolsDesc}
 For each step that requires a tool, output ONE LINE in this format:
 TOOL: <tool_name> | ACTION: <brief description> | INPUT: <json>
 
-EXAMPLES:
-
-User: "create a file called hello.py that prints hello"
-TOOL: file | ACTION: Create hello.py | INPUT: {"operation":"write","path":"hello.py","content":"print('hello')"}
-
-User: "open google in browser"
-TOOL: desktop | ACTION: Open google | INPUT: {"action":"open_url","target":"https://google.com"}
-
-User: "run npm install"
-TOOL: shell | ACTION: Install npm dependencies | INPUT: {"command":"npm install","workdir":"."}
-
-User: "search for all TODO comments"
-TOOL: search | ACTION: Search for TODO | INPUT: {"pattern":"TODO","include":"*.ts"}
-
-User: "launch notepad"
-TOOL: desktop | ACTION: Open notepad | INPUT: {"action":"launch_app","target":"notepad.exe"}
-
 Rules:
 - Use "file" tool for reading, writing, creating, editing files.
 - Use "shell" tool for running commands.
 - Use "search" tool for searching code.
 - Use "desktop" tool for opening URLs or launching apps.
 - Each TOOL: line must have valid JSON matching the tool's input schema.
+- Do NOT use markdown formatting (like **bolding**) on TOOL: lines.
 - Do NOT output TOOL: lines for internal reasoning or planning steps.
 - Split complex tasks into small, single-action steps.
 - If no tool is needed, just describe the step in plain text.`;
@@ -147,15 +131,17 @@ Rules:
 
     for (const line of lines) {
       const trimmed = line.trim();
-      if (!trimmed.startsWith('TOOL:')) continue;
+      
+      // Look for TOOL: marker even if bolded or having prefix
+      const toolLineMatch = trimmed.match(/(?:\*\*|__)?TOOL:\s*(\w+)/i);
+      if (!toolLineMatch) continue;
 
-      const toolMatch = trimmed.match(/TOOL:\s*(\w+)/i);
-      const actionMatch = trimmed.match(/ACTION:\s*(.+?)(?=\s*\|\s*INPUT|\s*$)/i);
-      const inputMatch = trimmed.match(/INPUT:\s*(\{.+?\})/is);
+      const tool = toolLineMatch[1].toLowerCase();
+      
+      // Robust extraction of action and input, ignoring possible bolding at the end
+      const actionMatch = trimmed.match(/ACTION:\s*(.+?)(?=\s*\|\s*INPUT|\s*\*|$)/i);
+      const inputMatch = trimmed.match(/INPUT:\s*(\{.+?\})(?:\s*\*|$)/is);
 
-      if (!toolMatch) continue;
-
-      const tool = toolMatch[1].toLowerCase();
       const description = actionMatch ? actionMatch[1].trim() : trimmed;
       let input: Record<string, unknown> = {};
 

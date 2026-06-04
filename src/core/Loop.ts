@@ -193,14 +193,7 @@ export class InteractiveLoop {
     return new Promise(resolve => {
       const prompt = `${gradientText('◆ cl8')}${chalk.dim(' > ')}`;
       
-      const onInterfaceClose = () => {
-        resolve(null);
-      };
-
-      this.rl.once('close', onInterfaceClose);
-
       this.rl.question(prompt, (answer: string) => {
-        this.rl.removeListener('close', onInterfaceClose);
         resolve(answer);
       });
     });

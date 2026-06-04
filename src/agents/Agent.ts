@@ -167,7 +167,8 @@ export class Agent {
         while ((newlineIdx = lineBuffer.indexOf('\n')) >= 0) {
           const line = lineBuffer.slice(0, newlineIdx);
           lineBuffer = lineBuffer.slice(newlineIdx + 1);
-          if (line.trim().startsWith('TOOL:')) {
+          const isToolLine = /^(?:\*\*|__)?TOOL:/i.test(line.trim());
+          if (isToolLine) {
             fullResponse += line + '\n';
           } else {
             fullResponse += line + '\n';
@@ -176,7 +177,7 @@ export class Agent {
         }
       }
       if (lineBuffer.length > 0) {
-        if (lineBuffer.trim().startsWith('TOOL:')) {
+        if (/^(?:\*\*|__)?TOOL:/i.test(lineBuffer.trim())) {
           fullResponse += lineBuffer;
         } else {
           fullResponse += lineBuffer;
@@ -256,7 +257,7 @@ export class Agent {
           while ((idx = retryBuffer.indexOf('\n')) >= 0) {
             const line = retryBuffer.slice(0, idx);
             retryBuffer = retryBuffer.slice(idx + 1);
-            if (line.trim().startsWith('TOOL:')) {
+            if (/^(?:\*\*|__)?TOOL:/i.test(line.trim())) {
               retryFull += line + '\n';
             } else {
               retryFull += line + '\n';
@@ -264,7 +265,7 @@ export class Agent {
             }
           }
         }
-        if (retryBuffer.length > 0 && !retryBuffer.trim().startsWith('TOOL:')) {
+        if (retryBuffer.length > 0 && !/^(?:\*\*|__)?TOOL:/i.test(retryBuffer.trim())) {
           yield retryBuffer;
           retryFull += retryBuffer;
         }
@@ -316,12 +317,12 @@ export class Agent {
         continue;
       }
 
-      if (trimmed.startsWith('TOOL:')) {
+      if (/^(?:\*\*|__)?TOOL:/i.test(trimmed)) {
         const contextText = pendingContext;
         pendingContext = '';
 
-        const toolMatch = trimmed.match(/TOOL:\s*(\w+)/i);
-        const actionMatch = trimmed.match(/ACTION:\s*(.+?)(?=\s*\|\s*INPUT|\s*$)/i);
+        const toolMatch = trimmed.match(/(?:\*\*|__)?TOOL:\s*(\w+)/i);
+        const actionMatch = trimmed.match(/ACTION:\s*(.+?)(?=\s*\|\s*INPUT|\s*\*|$)/i);
         const inputMatch = this.parseJsonFromLine(trimmed);
 
         if (!toolMatch) continue;

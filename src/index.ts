@@ -4,7 +4,7 @@
 export { Agent, Planner, Executor, Reflector } from './agents/index.js';
 export { Engine, InteractiveLoop } from './core/index.js';
 export { loadConfig, updateConfig, resetConfig, getConfigPath } from './config/index.js';
-export { createProvider, BaseProvider, OpenAIProvider, GeminiProvider, OllamaProvider } from './providers/index.js';
+export { createProvider, BaseProvider } from './providers/index.js';
 export { ToolService, SecurityService, AuditService } from './services/index.js';
 export { getBuiltInTools, getToolDefinitions, BaseTool, FileTool, ShellTool, SearchTool } from './tools/index.js';
 export { ConversationMemory, SessionManager, VectorMemory } from './memory/index.js';
