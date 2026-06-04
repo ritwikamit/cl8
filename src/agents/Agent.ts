@@ -293,36 +293,88 @@ export class Agent {
   private parseInlineSteps(response: string): PlanStep[] {
     const steps: PlanStep[] = [];
     const lines = response.split('\n');
+    let pendingContext = '';
+    let inCodeBlock = false;
+    let codeBlockLang = '';
+    let codeBlockContent = '';
 
     for (const line of lines) {
       const trimmed = line.trim();
-      if (!trimmed.startsWith('TOOL:')) continue;
-
-      const toolMatch = trimmed.match(/TOOL:\s*(\w+)/i);
-      const actionMatch = trimmed.match(/ACTION:\s*(.+?)(?=\s*\|\s*INPUT|\s*$)/i);
-      const inputMatch = this.parseJsonFromLine(trimmed);
-
-      if (!toolMatch) continue;
-
-      const tool = toolMatch[1].toLowerCase();
-      const description = actionMatch ? actionMatch[1].trim() : trimmed;
-      let input: Record<string, unknown> = {};
-
-      if (inputMatch) {
-        try {
-          input = JSON.parse(inputMatch[1]);
-        } catch {
-          input = {};
+      if (trimmed.startsWith('```')) {
+        if (inCodeBlock) {
+          pendingContext += '```' + codeBlockLang + '\n' + codeBlockContent + '```\n';
+          inCodeBlock = false;
+          codeBlockContent = '';
+          codeBlockLang = '';
+        } else {
+          inCodeBlock = true;
+          codeBlockLang = trimmed.slice(3).trim().split(/\s+/)[0];
         }
+        continue;
+      }
+      if (inCodeBlock) {
+        codeBlockContent += line + '\n';
+        continue;
       }
 
-      steps.push({
-        id: generateId(),
-        description,
-        tool,
-        input,
-        status: 'pending',
-      });
+      if (trimmed.startsWith('TOOL:')) {
+        const contextText = pendingContext;
+        pendingContext = '';
+
+        const toolMatch = trimmed.match(/TOOL:\s*(\w+)/i);
+        const actionMatch = trimmed.match(/ACTION:\s*(.+?)(?=\s*\|\s*INPUT|\s*$)/i);
+        const inputMatch = this.parseJsonFromLine(trimmed);
+
+        if (!toolMatch) continue;
+
+        const tool = toolMatch[1].toLowerCase();
+        const description = actionMatch ? actionMatch[1].trim() : trimmed;
+        let input: Record<string, unknown> = {};
+
+        if (inputMatch) {
+          try {
+            input = JSON.parse(inputMatch[1]);
+          } catch {
+            input = {};
+          }
+        }
+
+        if (tool === 'file') {
+          if (!input.path) {
+            const backtickHeadingMatch = contextText.match(/`([^`]+\.\w+)`/);
+            if (backtickHeadingMatch) {
+              input.path = backtickHeadingMatch[1].replace(/[^a-zA-Z0-9_\-\.\/\\]/g, '');
+            }
+            const codeBlockPath = contextText.match(/```\w*\n[\s\S]*?```\s*\n?$/);
+            if (!input.path && codeBlockPath) {
+              const firstLine = contextText.trim().split('\n').slice(-2, -1)[0] || '';
+              const nameMatch = firstLine.match(/`([^`]+)`/) || contextText.match(/(\w+\.\w+)/);
+              if (nameMatch) input.path = nameMatch[1].replace(/[^a-zA-Z0-9_\-\.\/\\]/g, '');
+            }
+          }
+          if (!input.content) {
+            const codeBlockMatch = contextText.match(/```(\w*)\n([\s\S]*?)```/);
+            if (codeBlockMatch) {
+              const code = codeBlockMatch[2].trim();
+              if (code.length > 0) input.content = code;
+            }
+          }
+        }
+        if (tool === 'shell' && !input.command) {
+          const backtickCmd = contextText.match(/`([a-z0-9_\-\.\/\\\s]+)`/i);
+          if (backtickCmd) input.command = backtickCmd[1];
+        }
+
+        steps.push({
+          id: generateId(),
+          description,
+          tool,
+          input,
+          status: 'pending',
+        });
+      } else {
+        pendingContext += line + '\n';
+      }
     }
 
     return steps;

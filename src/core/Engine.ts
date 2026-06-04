@@ -152,6 +152,7 @@ When the user asks you to do something that requires a tool, output TOOL: lines 
 TOOL: <tool_name> | ACTION: <description> | INPUT: <json>
 
 CRITICAL: Every TOOL: file line MUST include the filename in INPUT.path.
+CRITICAL: Every TOOL: file line for writing MUST include the full file content in INPUT.content (or in a markdown code block above the TOOL line).
 CRITICAL: Every TOOL: shell line MUST include the command in INPUT.command.
 
 Examples:
