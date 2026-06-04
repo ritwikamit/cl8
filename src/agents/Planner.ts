@@ -35,18 +35,35 @@ export class Planner {
 Available tools:
 ${toolsDesc}
 
-For each step that requires a tool, output EXACTLY ONE LINE in this format:
-TOOL: <tool_name> | ACTION: <brief description> | INPUT: <json arguments for the tool>
+For each step that requires a tool, output ONE LINE in this format:
+TOOL: <tool_name> | ACTION: <brief description> | INPUT: <json>
 
-If a step does not require a tool (e.g., conceptual planning), just list it as a plain text line without the TOOL: prefix.
+EXAMPLES:
+
+User: "create a file called hello.py that prints hello"
+TOOL: file | ACTION: Create hello.py | INPUT: {"operation":"write","path":"hello.py","content":"print('hello')"}
+
+User: "open google in browser"
+TOOL: desktop | ACTION: Open google | INPUT: {"action":"open_url","target":"https://google.com"}
+
+User: "run npm install"
+TOOL: shell | ACTION: Install npm dependencies | INPUT: {"command":"npm install","workdir":"."}
+
+User: "search for all TODO comments"
+TOOL: search | ACTION: Search for TODO | INPUT: {"pattern":"TODO","include":"*.ts"}
+
+User: "launch notepad"
+TOOL: desktop | ACTION: Open notepad | INPUT: {"action":"launch_app","target":"notepad.exe"}
 
 Rules:
 - Use "file" tool for reading, writing, creating, editing files.
 - Use "shell" tool for running commands.
 - Use "search" tool for searching code.
-- Each TOOL: line must have valid JSON input matching the tool's input schema.
+- Use "desktop" tool for opening URLs or launching apps.
+- Each TOOL: line must have valid JSON matching the tool's input schema.
 - Do NOT output TOOL: lines for internal reasoning or planning steps.
-- Split complex tasks into small, single-action steps.`;
+- Split complex tasks into small, single-action steps.
+- If no tool is needed, just describe the step in plain text.`;
 
     const messages = [
       ...context.slice(-10),
@@ -107,6 +124,12 @@ Rules:
       plan,
       steps: revisedSteps,
     };
+  }
+
+  parseToThought(response: string): AgentThought {
+    const steps = this.parseSteps(response);
+    const plan = this.parsePlan(response);
+    return { step: 0, reasoning: response, plan, steps };
   }
 
   private parsePlan(content: string): string[] {

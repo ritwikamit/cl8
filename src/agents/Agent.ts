@@ -20,12 +20,11 @@ const DEFAULT_CONFIG: AgentConfig = {
   maxRetries: 3,
   temperature: 0.7,
   topP: 0.9,
-  systemPrompt: `You are CL8, a terminal-based AI coding and automation assistant.
-You help users write, debug, refactor, and understand code.
-You can read and write files, execute commands, and search codebases.
+    systemPrompt: `You are CL8, a terminal-based AI assistant that can control the user's computer.
+You can read/write files, execute shell commands, search code, open URLs in the browser, and launch applications.
 Always explain your reasoning clearly and concisely.
 Follow security guidelines and never execute dangerous commands without approval.`,
-  allowedTools: ['file', 'shell', 'search'],
+  allowedTools: ['file', 'shell', 'search', 'desktop'],
   contextWindow: 100000,
 };
 
@@ -100,19 +99,7 @@ export class Agent {
   ): AsyncGenerator<string> {
     if (this.isGreeting(input)) {
       this.state.status = 'responding';
-      yield 'Hello! How can I help you today? 😊';
-      yield '\n\n';
-      this.state.status = 'idle';
-      return;
-    }
-
-    if (this.isSimpleQuery(input)) {
-      this.state.status = 'responding';
-      yield* this.reflector.generateResponseStream(input, [], new Map(), {
-        step: 0,
-        reasoning: 'Direct response for simple query.',
-        plan: [],
-      });
+      yield 'Hello! How can I help you today?';
       yield '\n\n';
       this.state.status = 'idle';
       return;
@@ -134,15 +121,45 @@ export class Agent {
     }
 
     this.state.status = 'executing';
-    const steps: PlanStep[] = this.parsePlanSteps(thought);
-    const results = new Map<string, ExecutionResult>();
+    let steps: PlanStep[] = this.parsePlanSteps(thought);
+    let results = new Map<string, ExecutionResult>();
 
     if (steps.length === 0) {
-      this.state.status = 'responding';
-      yield* this.reflector.generateResponseStream(input, [], new Map(), thought);
-      yield '\n\n';
-      this.state.status = 'idle';
-      return;
+      yield `_Let me figure this out..._\n\n`;
+      const toolList = this.config.allowedTools
+        .map(t => {
+          const def = this.toolService.getTools().find(d => d.name === t);
+          return def ? `- **${def.name}**: ${def.description}` : `- ${t}`;
+        }).join('\n');
+
+      const fallbackMsgs: AgentMessage[] = [
+        ...this.state.messages.slice(-5),
+        {
+          id: generateId(),
+          role: 'user',
+          content: `${input}
+
+Available tools:
+${toolList}
+
+If this task requires using any tool, output EXACTLY this format (one line per tool call):
+TOOL: <tool_name> | ACTION: <what to do> | INPUT: <json>
+
+Example: TOOL: file | ACTION: Read the file | INPUT: {"operation":"read","path":"test.txt"}
+
+If no tool is needed, just respond normally.`,
+          timestamp: new Date(),
+        },
+      ];
+
+      const fallback = await this.provider.chat({
+        messages: fallbackMsgs,
+        maxTokens: 1024,
+        temperature: 0.2,
+      });
+      thought = this.planner.parseToThought(fallback.content);
+      this.state.thoughts.push(thought);
+      steps = this.parsePlanSteps(thought);
     }
 
     for (const step of steps) {
@@ -213,16 +230,14 @@ export class Agent {
 
   private isGreeting(input: string): boolean {
     const trimmed = input.trim().toLowerCase();
-    const greetings = ['hi', 'hello', 'hey', 'yo', 'sup', 'howdy', 'greetings', 'good morning', 'good afternoon', 'good evening'];
-    if (greetings.includes(trimmed)) return true;
+    const pureGreetings = ['hi', 'hello', 'hey', 'yo', 'sup', 'howdy', 'greetings'];
+    if (pureGreetings.includes(trimmed)) return true;
 
-    const simplePatterns = [
+    const greetingPatterns = [
       /^(hi|hello|hey|yo|sup|howdy)(!|\.)?$/i,
-      /^(what'?s up|how are you|how'?s it going|what can you do|who are you|what are you|tell me about yourself)(\?)?$/i,
-      /^(thanks|thank you|thx|ty|ok|okay|sure|great|nice|good|awesome|cool|got it)(!|\.)?$/i,
-      /^(bye|goodbye|see you|later|cya)(!|\.)?$/i,
+      /^(what'?s up|how are you|how'?s it going)(\?)?$/i,
     ];
-    for (const p of simplePatterns) {
+    for (const p of greetingPatterns) {
       if (p.test(trimmed)) return true;
     }
     return false;
@@ -230,31 +245,15 @@ export class Agent {
 
   private isSimpleQuery(input: string): boolean {
     const trimmed = input.trim().toLowerCase();
-    
-    // Detect simple coding requests that don't need complex planning or tool execution.
-    // We avoid triggering this if the user asks to "run", "install", "create", "save", or "fix".
-    const actionKeywords = ['run', 'install', 'create', 'save', 'fix', 'execute', 'apply', 'setup', 'build', 'deploy', 'search'];
-    const hasActionKeyword = actionKeywords.some(kw => trimmed.includes(kw));
+    const actionKeywords = ['run', 'install', 'create', 'save', 'fix', 'execute', 'apply', 'setup', 'build', 'deploy', 'search', 'open', 'launch', 'start', 'delete', 'remove', 'move', 'copy', 'rename'];
+    if (actionKeywords.some(kw => trimmed.includes(kw))) return false;
 
-    if (hasActionKeyword) return false;
-
-    const codingPatterns = [
-      /print.*(pyramid|pattern|loop|array|string)/i,
-      /how to.*(loop|if|else|switch|function|class)/i,
-      /write.*(java|python|javascript|js|ts|c\+\+|cpp|c#).*program.*to/i,
-      /example of.*(sort|filter|map|reduce|recursion)/i,
-      /explain.*(bubble sort|binary search|linked list|stack|queue)/i,
-      /^(fibonacci|factorial|prime number|palindrome)/i
+    const simpleExplanations = [
+      /^(what is|explain|define|what does|how does) .{1,60}\?*$/i,
+      /^(what can you do|who are you|what are you|what is cl8|tell me about yourself)\??$/i,
     ];
-
-    const allPatterns = codingPatterns;
-    for (const p of allPatterns) {
+    for (const p of simpleExplanations) {
       if (p.test(trimmed)) return true;
-    }
-
-    // Length-based heuristic: very short inputs are likely simple queries
-    if (trimmed.split(/\s+/).length <= 3 && !trimmed.includes('/') && !trimmed.includes('\\')) {
-      return true;
     }
 
     return false;
@@ -269,7 +268,7 @@ export class Agent {
   }
 
   private canAutoExecute(step: PlanStep): boolean {
-    return step.tool === 'shell' || step.tool === 'file' || step.tool === 'search';
+    return ['shell', 'file', 'search', 'desktop'].includes(step.tool);
   }
 
   getState(): AgentState {
