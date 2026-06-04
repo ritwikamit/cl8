@@ -3,6 +3,8 @@ import { FileTool } from './FileTool.js';
 import { ShellTool } from './ShellTool.js';
 import { SearchTool } from './SearchTool.js';
 import { DesktopTool } from './DesktopTool.js';
+import { LSPTool } from './LSPTool.js';
+import { GitTool } from './GitTool.js';
 import { ToolDefinition } from '../types/tool.js';
 
 const BUILT_IN_TOOLS: BaseTool[] = [
@@ -10,6 +12,8 @@ const BUILT_IN_TOOLS: BaseTool[] = [
   new ShellTool(),
   new SearchTool(),
   new DesktopTool(),
+  new LSPTool(),
+  new GitTool(),
 ];
 
 export function getBuiltInTools(): BaseTool[] {
@@ -24,4 +28,4 @@ export function findTool(name: string): BaseTool | undefined {
   return BUILT_IN_TOOLS.find(t => t.getName() === name);
 }
 
-export { BaseTool, FileTool, ShellTool, SearchTool, DesktopTool };
+export { BaseTool, FileTool, ShellTool, SearchTool, DesktopTool, LSPTool, GitTool };
