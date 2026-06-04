@@ -34,7 +34,19 @@ export class FileTool extends BaseTool {
 
   async execute(input: ToolInput, context: ToolContext): Promise<ToolOutput> {
     let operation = input.operation as string | undefined;
-    const filePath = input.path as string;
+    let filePath = input.path as string | undefined;
+
+    if (!filePath && input.description) {
+      const desc = (input.description as string).toLowerCase();
+      const match = desc.match(/(?:write|create|edit|read|delete)\s+(.+)/i);
+      if (match) {
+        filePath = match[1].trim().split(/\s+/)[0].replace(/[^a-zA-Z0-9_\-\.\/\\]/g, '');
+      } else if (desc.includes('file') || desc.includes('script')) {
+        const words = desc.split(/\s+/);
+        const pyIdx = words.findIndex((w: string) => w.endsWith('.py'));
+        if (pyIdx >= 0) filePath = words[pyIdx];
+      }
+    }
 
     if (!operation && filePath && input.content) {
       operation = 'write';

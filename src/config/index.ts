@@ -21,7 +21,7 @@ const DEFAULT_CONFIG: CL8Config = {
     defaultProvider: 'openai',
   },
   security: {
-    approvalMode: 'ask',
+    approvalMode: 'auto',
     allowedCommands: [],
     blockedCommands: ['rm -rf /', 'format', 'del /f /s'],
     maxFileSize: 10 * 1024 * 1024,

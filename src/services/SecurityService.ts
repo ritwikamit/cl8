@@ -1,4 +1,5 @@
 import path from 'node:path';
+import readline from 'node:readline';
 import { SecurityConfig, ApprovalMode } from '../types/config.js';
 import { ToolDefinition } from '../types/tool.js';
 import { getLogger } from '../utils/logger.js';
@@ -59,7 +60,16 @@ export class SecurityService {
   async requestApproval(toolName: string, input: Record<string, unknown>): Promise<boolean> {
     this.logger.info(`Approval requested for tool`, { tool: toolName, input });
 
-    return false;
+    try {
+      const rl = readline.createInterface({ input: process.stdin, output: process.stderr });
+      const answer = await new Promise<string>(resolve => {
+        rl.question(`  Allow ${toolName}${input.command ? ' ' + input.command : ''}? (y/N) `, resolve);
+      });
+      rl.close();
+      return answer.trim().toLowerCase() === 'y';
+    } catch {
+      return false;
+    }
   }
 
   validateFileSize(size: number): boolean {
