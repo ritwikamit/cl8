@@ -1,0 +1,14 @@
+{
+  "id": "QlCAf8FdVblX-4cmC-4Bkt93e5u3",
+  "workspace": "C:\\Users\\nihar\\OneDrive\\Desktop\\proj\\CL8",
+  "provider": "ollama",
+  "model": "gemma4:e4b",
+  "startTime": "2026-06-01T09:53:12.589Z",
+  "messageCount": 0,
+  "tokenUsage": {
+    "prompt": 0,
+    "completion": 0,
+    "total": 0
+  },
+  "endTime": "2026-06-01T09:53:31.856Z"
+}

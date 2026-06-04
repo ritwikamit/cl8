@@ -232,14 +232,6 @@ export class Agent {
         yield ` ${this.colorCross('✗')}\n`;
         yield `    ${message}\n`;
       }
-        }
-      } catch (err) {
-        allSucceeded = false;
-        const message = err instanceof Error ? err.message : String(err);
-        failedOutput += `Step "${step.description}" failed: ${message}\n`;
-        yield ` ${this.colorCross('✗')}\n`;
-        yield `    ${message}\n`;
-      }
 
       if (this.state.turn >= this.config.maxTurns) {
         yield `\n  ⚠ Max turns reached.\n`;

@@ -39,7 +39,7 @@ export class Engine {
     this.toolService = new ToolService(this.securityService, this.auditService);
 
     const providerConfig = getProviderConfig(this.config.ai);
-    this.provider = createProvider(providerConfig);
+    this.provider = await createProvider(providerConfig);
 
     const agentTools = this.toolService.getTools();
     this.agent = new Agent(this.provider, this.toolService, agentTools, {
@@ -182,16 +182,17 @@ TOOL: git | ACTION: Git push | INPUT: {"action":"push","name":"origin","branch":
 If no tool is needed, just respond directly.
 
 Windows-specific notes:
-- Use "py" instead of "python" (Python launcher, pre-installed)
-- Use "python -m pip" instead of "pip"
-- If Python is not found, install it: winget install Python.Python
-- Shell commands use PowerShell syntax
+- Prefer using "py" instead of "python" (Python launcher).
+- Use "python -m pip" instead of "pip".
+- If a command fails (e.g., "not recognized"), ALWAYS try common alternatives before giving up.
+- Shell commands use PowerShell syntax.
 
 Guidelines:
-1. Understand the user's request fully before acting
-2. Always include the full file path in file tool INPUT (e.g., "path":"face_detector.py")
-3. Read files before editing them
-4. Keep responses clear and concise
-5. Ask for clarification when needed`;
+1. Understand the user's request fully before acting.
+2. Always include the full file path in file tool INPUT.
+3. Read files before editing them.
+4. Keep responses clear and concise.
+5. If a tool execution fails, analyze the error and try a fix (like using a different command or fixing a path).
+6. Ask for clarification when needed.
   }
 }

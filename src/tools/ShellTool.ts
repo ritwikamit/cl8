@@ -55,6 +55,17 @@ export class ShellTool extends BaseTool {
     const timeout = (input.timeout as number) || 120000;
     const workdir = (input.workdir as string) || context.workspace || process.cwd();
 
+    // Auto-correct common Python issues on Windows to make CL8 robust across all terminals.
+    if (process.platform === 'win32') {
+      if (command.startsWith('pip ')) {
+        command = command.replace(/^pip /, 'py -m pip ');
+      } else if (command.startsWith('python ')) {
+        command = command.replace(/^python /, 'py ');
+      } else if (command.startsWith('python3 ')) {
+        command = command.replace(/^python3 /, 'py ');
+      }
+    }
+
     try {
       const startTime = Date.now();
       const { stdout, stderr } = await execAsync(command, {

@@ -1,17 +1,20 @@
 import { ProviderConfig, ProviderType } from '../types/provider.js';
 import { BaseProvider } from './BaseProvider.js';
-import { OpenAIProvider } from './OpenAIProvider.js';
-import { GeminiProvider } from './GeminiProvider.js';
-import { OllamaProvider } from './OllamaProvider.js';
 
-export function createProvider(config: ProviderConfig): BaseProvider {
+export async function createProvider(config: ProviderConfig): Promise<BaseProvider> {
   switch (config.type) {
-    case 'openai':
+    case 'openai': {
+      const { OpenAIProvider } = await import('./OpenAIProvider.js');
       return new OpenAIProvider(config);
-    case 'gemini':
+    }
+    case 'gemini': {
+      const { GeminiProvider } = await import('./GeminiProvider.js');
       return new GeminiProvider(config);
-    case 'ollama':
+    }
+    case 'ollama': {
+      const { OllamaProvider } = await import('./OllamaProvider.js');
       return new OllamaProvider(config);
+    }
     default:
       throw new Error(`Unsupported provider type: ${config.type}`);
   }
