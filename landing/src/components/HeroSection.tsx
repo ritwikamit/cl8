@@ -17,7 +17,7 @@ export default function HeroSection() {
             <p className="overline mb-6">Terminal AI · v0.1.0-alpha.33</p>
             <h1 className="font-heading italic text-white text-[clamp(2.5rem,10vw,7rem)] leading-[0.88] tracking-[-2px] md:tracking-[-3px] px-2">
               Your terminal<br />
-              is the <span className="bg-gradient-to-r from-white via-white/80 to-white bg-clip-text text-transparent inline-block px-1">IDE</span>
+              is the <span className="inline-block"><span className="text-white">I</span><span className="text-white/85">D</span><span className="text-white/70">E</span></span>
             </h1>
             <p className="mt-8 text-base md:text-lg text-white/50 max-w-xl mx-auto font-body font-normal leading-relaxed">
               An AI-powered CLI with full IDE capabilities — code intelligence, version control, file management, and desktop automation. Connect any model and work without leaving the terminal.
