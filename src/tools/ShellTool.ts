@@ -52,7 +52,7 @@ export class ShellTool extends BaseTool {
       };
     }
 
-    const timeout = (input.timeout as number) || 30000;
+    const timeout = (input.timeout as number) || 120000;
     const workdir = (input.workdir as string) || context.workspace || process.cwd();
 
     try {
@@ -79,9 +79,9 @@ export class ShellTool extends BaseTool {
       return {
         success: err.code === 0,
         stdout: err.stdout || '',
-        stderr: err.stderr || err.message,
+        stderr: err.stderr || '',
         exitCode: err.code || -1,
-        error: err.message,
+        error: (err.stderr || err.message || '').trim(),
       };
     }
   }

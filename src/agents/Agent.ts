@@ -220,11 +220,18 @@ export class Agent {
           }
         } else {
           allSucceeded = false;
-          failedOutput += `Step "${step.description}" failed: ${result.error || 'Unknown error'}\n`;
+          const errMsg = result.error || result.output || 'Unknown error';
+          failedOutput += `Step "${step.description}" failed: ${errMsg}\n`;
           yield ` ${this.colorCross('✗')}\n`;
-          if (result.error) {
-            yield `    ${result.error}\n`;
-          }
+          yield `    ${errMsg}\n`;
+        }
+      } catch (err) {
+        allSucceeded = false;
+        const message = err instanceof Error ? err.message : String(err);
+        failedOutput += `Step "${step.description}" failed: ${message}\n`;
+        yield ` ${this.colorCross('✗')}\n`;
+        yield `    ${message}\n`;
+      }
         }
       } catch (err) {
         allSucceeded = false;
