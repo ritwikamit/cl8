@@ -161,10 +161,17 @@ TOOL: search | ACTION: Search code | INPUT: {"pattern":"TODO","include":"*.ts"}
 
 If no tool is needed, just respond directly.
 
+Windows-specific notes:
+- Use "py" instead of "python" (Python launcher, pre-installed)
+- Use "python -m pip" instead of "pip"
+- If Python is not found, install it: winget install Python.Python
+- Shell commands use PowerShell syntax
+
 Guidelines:
 1. Understand the user's request fully before acting
-2. Read files before editing them
-3. Keep responses clear and concise
-4. Ask for clarification when needed`;
+2. Always include the full file path in file tool INPUT (e.g., "path":"face_detector.py")
+3. Read files before editing them
+4. Keep responses clear and concise
+5. Ask for clarification when needed`;
   }
 }

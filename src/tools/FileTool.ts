@@ -37,12 +37,19 @@ export class FileTool extends BaseTool {
     let filePath = input.path as string | undefined;
 
     if (!filePath && input.description) {
-      const desc = (input.description as string).toLowerCase();
-      const words = desc.split(/\s+/);
-      const namedWord = words.find(w => w.endsWith('.py') || w.endsWith('.js') || w.endsWith('.ts') || w.endsWith('.txt') || w.endsWith('.json') || w.endsWith('.html'));
-      if (namedWord) {
-        filePath = namedWord.replace(/[^a-zA-Z0-9_\-\.\/\\]/g, '');
-      } else if (input.content && typeof input.content === 'string') {
+      const desc = input.description as string;
+      const backtickMatch = desc.match(/`([^`]+\.\w+)`/);
+      if (backtickMatch) {
+        filePath = backtickMatch[1].replace(/[^a-zA-Z0-9_\-\.\/\\]/g, '');
+      }
+      if (!filePath) {
+        const words = desc.toLowerCase().split(/\s+/);
+        const namedWord = words.find(w => w.endsWith('.py') || w.endsWith('.js') || w.endsWith('.ts') || w.endsWith('.txt') || w.endsWith('.json') || w.endsWith('.html') || w.endsWith('.css') || w.endsWith('.md'));
+        if (namedWord) {
+          filePath = namedWord.replace(/[^a-zA-Z0-9_\-\.\/\\]/g, '');
+        }
+      }
+      if (!filePath && input.content && typeof input.content === 'string') {
         if (input.content.includes('import cv2') || input.content.includes('import opencv')) {
           filePath = 'script.py';
         } else if (input.content.includes('import') || input.content.includes('def ') || input.content.includes('class ')) {

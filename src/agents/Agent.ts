@@ -300,7 +300,7 @@ export class Agent {
 
       const toolMatch = trimmed.match(/TOOL:\s*(\w+)/i);
       const actionMatch = trimmed.match(/ACTION:\s*(.+?)(?=\s*\|\s*INPUT|\s*$)/i);
-      const inputMatch = trimmed.match(/INPUT:\s*(\{.+?\})/is);
+      const inputMatch = this.parseJsonFromLine(trimmed);
 
       if (!toolMatch) continue;
 
@@ -326,6 +326,21 @@ export class Agent {
     }
 
     return steps;
+  }
+
+  private parseJsonFromLine(line: string): RegExpMatchArray | null {
+    const inputStart = line.indexOf('INPUT:');
+    if (inputStart < 0) return null;
+    const jsonStr = line.slice(inputStart + 6).trim();
+    let depth = 0;
+    let start = -1;
+    for (let i = 0; i < jsonStr.length; i++) {
+      const ch = jsonStr[i];
+      if (ch === '{') { if (depth === 0) start = i; depth++; }
+      else if (ch === '}') { depth--; if (depth === 0 && start >= 0) return [jsonStr.slice(start, i + 1)] as any; }
+      else if (ch === '"') { i++; while (i < jsonStr.length && jsonStr[i] !== '"') { if (jsonStr[i] === '\\') i++; i++; } }
+    }
+    return null;
   }
 
   private colorArrow(text: string): string {
