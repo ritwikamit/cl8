@@ -202,6 +202,8 @@ export class Agent {
     this.state.status = 'executing';
 
     const results = new Map<string, ExecutionResult>();
+    let allSucceeded = true;
+    let failedOutput = '';
 
     for (const step of steps) {
       this.state.turn++;
@@ -217,13 +219,17 @@ export class Agent {
             yield `    ${result.output}\n`;
           }
         } else {
+          allSucceeded = false;
+          failedOutput += `Step "${step.description}" failed: ${result.error || 'Unknown error'}\n`;
           yield ` ${this.colorCross('✗')}\n`;
           if (result.error) {
             yield `    ${result.error}\n`;
           }
         }
       } catch (err) {
+        allSucceeded = false;
         const message = err instanceof Error ? err.message : String(err);
+        failedOutput += `Step "${step.description}" failed: ${message}\n`;
         yield ` ${this.colorCross('✗')}\n`;
         yield `    ${message}\n`;
       }
@@ -231,6 +237,52 @@ export class Agent {
       if (this.state.turn >= this.config.maxTurns) {
         yield `\n  ⚠ Max turns reached.\n`;
         break;
+      }
+    }
+
+    if (!allSucceeded && this.state.turn < this.config.maxTurns) {
+      yield `\n  ${this.colorArrow('→')} Analyzing failure and retrying...\n\n`;
+      try {
+        const retryMessages: AgentMessage[] = [
+          ...this.state.messages.slice(-5),
+          { id: generateId(), role: 'assistant', content: fullResponse, timestamp: new Date() },
+          { id: generateId(), role: 'user', content: `The following steps failed:\n${failedOutput}\nFix the issue and retry. If a tool is missing, install it first.`, timestamp: new Date() },
+        ];
+        const retryStream = this.provider.chatStream({ messages: retryMessages, systemPrompt, maxTokens: 2048, temperature: this.config.temperature });
+        let retryFull = '';
+        let retryBuffer = '';
+        for await (const chunk of retryStream) {
+          retryBuffer += chunk.content;
+          let idx;
+          while ((idx = retryBuffer.indexOf('\n')) >= 0) {
+            const line = retryBuffer.slice(0, idx);
+            retryBuffer = retryBuffer.slice(idx + 1);
+            if (line.trim().startsWith('TOOL:')) {
+              retryFull += line + '\n';
+            } else {
+              retryFull += line + '\n';
+              yield line + '\n';
+            }
+          }
+        }
+        if (retryBuffer.length > 0 && !retryBuffer.trim().startsWith('TOOL:')) {
+          yield retryBuffer;
+          retryFull += retryBuffer;
+        }
+        const retrySteps = this.parseInlineSteps(retryFull);
+        for (const step of retrySteps) {
+          this.state.turn++;
+          if (this.state.turn >= this.config.maxTurns) break;
+          yield `\n  ${this.colorArrow('→')} ${step.description}...`;
+          try {
+            const result = await this.executor.executeStep(step, toolContext);
+            yield result.success ? ` ${this.colorCheck('✓')}\n` : ` ${this.colorCross('✗')}\n    ${result.error || ''}\n`;
+          } catch (err) {
+            yield ` ${this.colorCross('✗')}\n    ${err instanceof Error ? err.message : String(err)}\n`;
+          }
+        }
+      } catch {
+        yield `  ${this.colorCross('✗')} Auto-retry failed.\n`;
       }
     }
 
