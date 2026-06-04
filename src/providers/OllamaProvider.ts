@@ -51,7 +51,7 @@ export class OllamaProvider extends BaseProvider {
     };
   }
 
-  private async fetchWithTimeout(url: string, options: RequestInit, timeoutMs = 120000): Promise<Response> {
+  private async fetchWithTimeout(url: string, options: RequestInit, timeoutMs = 60000): Promise<Response> {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), timeoutMs);
     try {
@@ -110,7 +110,7 @@ export class OllamaProvider extends BaseProvider {
         stream: true,
         options: this.buildOptions(request),
       }),
-    }, 180000);
+    }, 120000);
 
     if (!response.ok) {
       throw new Error(`Ollama API error: ${response.status} ${response.statusText}`);
