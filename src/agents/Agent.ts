@@ -246,7 +246,7 @@ export class Agent {
         const retryMessages: AgentMessage[] = [
           ...this.state.messages.slice(-5),
           { id: generateId(), role: 'assistant', content: fullResponse, timestamp: new Date() },
-          { id: generateId(), role: 'user', content: `The following steps failed:\n${failedOutput}\nFix the issue and retry. If a tool is missing, install it first.`, timestamp: new Date() },
+          { id: generateId(), role: 'user', content: `The following steps failed:\n${failedOutput}\nFix the issue and retry. Include the filename (e.g. \`filename.py\`) in a markdown heading or code block above your TOOL: line. If a tool is missing, install it first.`, timestamp: new Date() },
         ];
         const retryStream = this.provider.chatStream({ messages: retryMessages, systemPrompt, maxTokens: 2048, temperature: this.config.temperature });
         let retryFull = '';

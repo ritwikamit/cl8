@@ -1,5 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { execSync } from 'child_process';
 import { BaseTool } from './BaseTool.js';
 import { ToolInput, ToolOutput, ToolContext } from '../types/tool.js';
 
@@ -124,7 +125,21 @@ export class FileTool extends BaseTool {
 
   private async writeFile(filePath: string, content: string): Promise<ToolOutput> {
     await fs.mkdir(path.dirname(filePath), { recursive: true });
-    await fs.writeFile(filePath, content, 'utf-8');
+    try {
+      await fs.writeFile(filePath, content, 'utf-8');
+    } catch (err: any) {
+      if (err.code === 'ENOENT') {
+        try {
+          const b64 = Buffer.from(content, 'utf-8').toString('base64');
+          const psCmd = `[System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String('${b64}')) | Set-Content '${filePath.replace(/'/g, "''")}' -Encoding UTF8`;
+          execSync(`powershell -NoProfile -Command "${psCmd.replace(/"/g, '\\"')}"`, { timeout: 15000 });
+        } catch {
+          throw err;
+        }
+      } else {
+        throw err;
+      }
+    }
     return {
       success: true,
       data: { path: filePath, size: content.length },
