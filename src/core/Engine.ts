@@ -155,6 +155,7 @@ TOOL: <tool_name> | ACTION: <description> | INPUT: <json>
 
 CRITICAL: Every TOOL: file line MUST include the filename in INPUT.path.
 CRITICAL: Every TOOL: file line for writing MUST include the full file content in INPUT.content (or in a markdown code block above the TOOL line).
+CRITICAL: Do NOT put shell commands (like 'pip install') inside Python files. Use the 'shell' tool for installation.
 CRITICAL: Every TOOL: shell line MUST include the command in INPUT.command.
 
 Examples:
